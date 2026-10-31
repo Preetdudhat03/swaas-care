@@ -425,47 +425,33 @@ export default function RecordPage() {
 
               {/* Disease Prediction Cards */}
               {results.diseases && (
-                <div style={{ marginTop: '1.5rem' }}>
-                  <h4 style={{ color: '#e2e8f0', fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem', letterSpacing: '0.02em' }}>
-                    ≡ƒº¼ Disease Screening Results
+                <div className={styles.diseaseSection}>
+                  <h4 className={styles.diseaseTitle}>
+                    🧬 Disease Screening Results
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+                  <div className={styles.diseaseGrid}>
                     {results.diseases.map((d, i) => (
                       <div 
                         key={d.id} 
-                        className="glass-panel" 
+                        className={`${styles.diseaseCard} glass-panel`}
                         style={{
-                          padding: '1rem', 
-                          borderRadius: '14px', 
-                          textAlign: 'center',
                           borderLeft: `3px solid ${d.status === 'warning' ? '#ef4444' : '#22c55e'}`,
                           animationDelay: `${(i + 4) * 0.1}s`,
-                          animation: 'fadeInUp 0.5s ease forwards',
-                          opacity: 0
                         }}
                       >
-                        <span style={{ fontSize: '1.5rem' }}>{d.icon}</span>
-                        <div style={{ fontWeight: 600, color: '#e2e8f0', fontSize: '0.85rem', marginTop: '0.4rem' }}>{d.label}</div>
-                        <div style={{
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          marginTop: '0.35rem',
-                          padding: '0.2rem 0.6rem',
-                          borderRadius: '20px',
-                          display: 'inline-block',
-                          background: d.status === 'warning' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
-                          color: d.status === 'warning' ? '#ef4444' : '#22c55e'
-                        }}>
+                        <span className={styles.diseaseIcon}>{d.icon}</span>
+                        <div className={styles.diseaseLabel}>{d.label}</div>
+                        <div className={`${styles.diseaseBadge} ${d.status === 'warning' ? styles.diseaseWarning : styles.diseaseGood}`}>
                           {d.result}
                         </div>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.3rem' }}>
+                        <div className={styles.diseaseConfidence}>
                           {d.confidence}% confidence
                         </div>
                       </div>
                     ))}
                   </div>
-                  <p style={{ fontSize: '0.65rem', color: '#64748b', marginTop: '0.75rem', textAlign: 'center', fontStyle: 'italic' }}>
-                    ΓÜò∩╕Å This is not a medical diagnosis. Consult a healthcare professional for clinical evaluation.
+                  <p className={styles.disclaimerText}>
+                    ⚠️ This is not a medical diagnosis. Consult a healthcare professional for clinical evaluation.
                   </p>
                 </div>
               )}
