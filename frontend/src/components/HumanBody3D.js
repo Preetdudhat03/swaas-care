@@ -346,7 +346,7 @@ function RealisticHeart({ activeCondition, onHotspotClick }) {
     }
 
     if (groupRef.current) {
-      const baseScale = 1.45;
+      const baseScale = 2.05;
       groupRef.current.scale.setScalar(baseScale * (1 + pulse));
     }
 
@@ -368,9 +368,9 @@ function RealisticHeart({ activeCondition, onHotspotClick }) {
   return (
     <group
       ref={groupRef}
-      position={[-0.02, 0.49, 0.08]}
+      position={[-0.035, 0.50, 0.09]}
       rotation={[0.12, 0.15, -0.25]}
-      scale={[1.45, 1.45, 1.45]}
+      scale={[2.05, 2.05, 2.05]}
       onClick={(e) => {
         e.stopPropagation();
         onHotspotClick?.('cardiovascular');
