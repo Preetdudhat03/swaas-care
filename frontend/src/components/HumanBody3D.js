@@ -25,54 +25,72 @@ useGLTF.preload('/models/body-female.glb');
 useGLTF.preload('/models/body-male.glb');
 
 /* ——————————————————————————————————————————————————————————————————————————
-   REALISTIC 3D HUMAN BODY MESH
-   Loads authentic, continuous, high-definition anatomical models (no primitive ovals)
-   with medical-grade bioluminescent physical glass shading.
+   HIGH-DEFINITION REALISTIC 3D HUMAN BODY MESH
+   Renders the authentic continuous 3D anatomical mesh with a vibrant,
+   high-visibility medical bioluminescent physical shader + subtle cyber-lattice
+   contours so it stands out crisply and beautifully against the light background.
    —————————————————————————————————————————————————————————————————————————— */
 function RealisticHumanModel({ gender = 'female' }) {
   const modelUrl = gender === 'male' ? '/models/body-male.glb' : '/models/body-female.glb';
   const { scene } = useGLTF(modelUrl);
 
-  // Custom bioluminescent holographic glass material
-  const bodyMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#9bb8ff'),
-      emissive: new THREE.Color('#101b3d'),
-      emissiveIntensity: 0.18,
-      roughness: 0.16,
-      metalness: 0.08,
-      transmission: 0.78,
-      thickness: 1.4,
-      ior: 1.44,
-      clearcoat: 0.95,
-      clearcoatRoughness: 0.1,
+  // Vibrant medical bioluminescent shader with physical depth and clearcoat
+  const { bodyMaterial, wireframeMaterial } = useMemo(() => {
+    // 1. Solid translucent body shell with specular clearcoat
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#3b82f6'), // High-visibility royal medical blue
+      emissive: new THREE.Color('#1e2d6b'), // Deep internal glow
+      emissiveIntensity: 0.45,
+      roughness: 0.22,
+      metalness: 0.16,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.08,
       transparent: true,
-      opacity: 0.88,
-      side: THREE.DoubleSide,
+      opacity: 0.85,
+      depthWrite: true,
+      depthTest: true,
+      side: THREE.FrontSide,
+    });
+
+    // 2. Subtle medical holographic wireframe accent highlighting muscle contours
+    const wireMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color('#bfdbfe'),
+      wireframe: true,
+      transparent: true,
+      opacity: 0.14,
       depthWrite: false,
     });
+
+    return { bodyMaterial: mat, wireframeMaterial: wireMat };
   }, []);
 
-  const clonedScene = useMemo(() => {
-    const clone = scene.clone();
-    clone.traverse((child) => {
+  // Clone scene and apply the dual-layer medical shader
+  const { solidModel, wireModel } = useMemo(() => {
+    const solid = scene.clone();
+    solid.traverse((child) => {
       if (child.isMesh) {
         child.material = bodyMaterial;
         child.castShadow = true;
         child.receiveShadow = true;
       }
     });
-    return clone;
-  }, [scene, bodyMaterial]);
 
-  // Positioned so the feet rest naturally on the ground plane at y = -2.35
-  // and head reaches ~1.85m, centering the torso at camera focal point
+    const wire = scene.clone();
+    wire.traverse((child) => {
+      if (child.isMesh) {
+        child.material = wireframeMaterial;
+      }
+    });
+
+    return { solidModel: solid, wireModel: wire };
+  }, [scene, bodyMaterial, wireframeMaterial]);
+
+  // Model height is 1.66m; scale 2.53 grounds the feet at y = -2.35
   return (
-    <primitive
-      object={clonedScene}
-      position={[0, -2.35, 0]}
-      scale={[2.53, 2.53, 2.53]}
-    />
+    <group position={[0, -2.35, 0]} scale={[2.53, 2.53, 2.53]}>
+      <primitive object={solidModel} />
+      <primitive object={wireModel} scale={[1.002, 1.002, 1.002]} />
+    </group>
   );
 }
 
@@ -102,9 +120,9 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
     for (let i = 0; i < count; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI * 0.65;
-      const r = 0.20 + Math.random() * 0.04;
+      const r = 0.19 + Math.random() * 0.04;
       pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      pos[i * 3 + 1] = 1.54 + r * Math.cos(phi) * 0.8;
+      pos[i * 3 + 1] = 1.48 + r * Math.cos(phi) * 0.8;
       pos[i * 3 + 2] = -0.01 + r * Math.sin(phi) * Math.sin(theta);
     }
     return { synapsePositions: pos };
@@ -113,13 +131,13 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
   // Airway tree branching segments
   const airwayBranches = useMemo(() => {
     return [
-      { start: [0, 0.62, 0.08], end: [0.09, 0.54, 0.06], r: 0.016 },
-      { start: [0, 0.62, 0.08], end: [-0.09, 0.54, 0.06], r: 0.016 },
-      { start: [0.09, 0.54, 0.06], end: [0.16, 0.58, 0.04], r: 0.011 },
-      { start: [0.09, 0.54, 0.06], end: [0.18, 0.48, 0.05], r: 0.011 },
-      { start: [0.09, 0.54, 0.06], end: [0.14, 0.38, 0.03], r: 0.010 },
-      { start: [-0.09, 0.54, 0.06], end: [-0.16, 0.56, 0.04], r: 0.011 },
-      { start: [-0.09, 0.54, 0.06], end: [-0.17, 0.42, 0.04], r: 0.011 },
+      { start: [0, 0.60, 0.08], end: [0.09, 0.52, 0.06], r: 0.016 },
+      { start: [0, 0.60, 0.08], end: [-0.09, 0.52, 0.06], r: 0.016 },
+      { start: [0.09, 0.52, 0.06], end: [0.16, 0.56, 0.04], r: 0.011 },
+      { start: [0.09, 0.52, 0.06], end: [0.18, 0.46, 0.05], r: 0.011 },
+      { start: [0.09, 0.52, 0.06], end: [0.14, 0.36, 0.03], r: 0.010 },
+      { start: [-0.09, 0.52, 0.06], end: [-0.16, 0.54, 0.04], r: 0.011 },
+      { start: [-0.09, 0.52, 0.06], end: [-0.17, 0.40, 0.04], r: 0.011 },
     ];
   }, []);
 
@@ -127,75 +145,75 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
     brain: new THREE.MeshPhysicalMaterial({
       color: '#ff2d87',
       emissive: '#d60062',
-      emissiveIntensity: 0.4,
+      emissiveIntensity: 0.5,
       roughness: 0.25,
       metalness: 0.1,
-      transmission: 0.6,
-      thickness: 1.2,
       transparent: true,
-      opacity: 0,
+      opacity: 0.15,
+      depthWrite: false,
     }),
     cerebellum: new THREE.MeshStandardMaterial({
       color: '#e62e78',
       emissive: '#b0004e',
-      emissiveIntensity: 0.35,
+      emissiveIntensity: 0.45,
       roughness: 0.35,
       transparent: true,
-      opacity: 0,
+      opacity: 0.15,
+      depthWrite: false,
     }),
     heart: new THREE.MeshPhysicalMaterial({
       color: '#ff1447',
       emissive: '#c7002e',
-      emissiveIntensity: 0.55,
+      emissiveIntensity: 0.65,
       roughness: 0.22,
       metalness: 0.15,
-      transmission: 0.5,
-      thickness: 1.4,
       transparent: true,
-      opacity: 0,
+      opacity: 0.2,
+      depthWrite: false,
     }),
     aorta: new THREE.MeshStandardMaterial({
       color: '#ff3366',
       emissive: '#d10038',
-      emissiveIntensity: 0.5,
+      emissiveIntensity: 0.55,
       roughness: 0.3,
       transparent: true,
-      opacity: 0,
+      opacity: 0.2,
+      depthWrite: false,
     }),
     lungs: new THREE.MeshPhysicalMaterial({
       color: '#38bdf8',
       emissive: '#0284c7',
-      emissiveIntensity: 0.45,
+      emissiveIntensity: 0.55,
       roughness: 0.3,
       metalness: 0.1,
-      transmission: 0.65,
-      thickness: 1.5,
       transparent: true,
-      opacity: 0,
+      opacity: 0.15,
+      depthWrite: false,
     }),
     bronchi: new THREE.MeshStandardMaterial({
       color: '#bae6fd',
       emissive: '#38bdf8',
-      emissiveIntensity: 0.6,
+      emissiveIntensity: 0.7,
       roughness: 0.2,
       transparent: true,
-      opacity: 0,
+      opacity: 0.2,
+      depthWrite: false,
     }),
   }), []);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
 
-    const targetBrainOp = isBrain ? 0.92 : 0.06;
-    const targetHeartOp = isHeart ? 0.95 : 0.10;
-    const targetLungsOp = isLungs ? 0.88 : 0.08;
+    const targetBrainOp = isBrain ? 0.95 : 0.18;
+    const targetHeartOp = isHeart ? 0.98 : 0.22;
+    const targetLungsOp = isLungs ? 0.92 : 0.18;
 
-    materials.brain.opacity = THREE.MathUtils.lerp(materials.brain.opacity, targetBrainOp, 0.06);
-    materials.cerebellum.opacity = THREE.MathUtils.lerp(materials.cerebellum.opacity, targetBrainOp * 0.9, 0.06);
-    materials.heart.opacity = THREE.MathUtils.lerp(materials.heart.opacity, targetHeartOp, 0.06);
-    materials.aorta.opacity = THREE.MathUtils.lerp(materials.aorta.opacity, targetHeartOp, 0.06);
-    materials.lungs.opacity = THREE.MathUtils.lerp(materials.lungs.opacity, targetLungsOp, 0.06);
-    materials.bronchi.opacity = THREE.MathUtils.lerp(materials.bronchi.opacity, targetLungsOp, 0.06);
+    materials.brain.opacity = THREE.MathUtils.lerp(materials.brain.opacity, targetBrainOp, 0.08);
+    materials.cerebellum.opacity = THREE.MathUtils.lerp(materials.cerebellum.opacity, targetBrainOp * 0.9, 0.08);
+    materials.heart.opacity = THREE.MathUtils.lerp(materials.heart.opacity, targetHeartOp, 0.08);
+    materials.aorta.opacity = THREE.MathUtils.lerp(materials.aorta.opacity, targetHeartOp, 0.08);
+    materials.lungs.opacity = THREE.MathUtils.lerp(materials.lungs.opacity, targetLungsOp, 0.08);
+    materials.bronchi.opacity = THREE.MathUtils.lerp(materials.bronchi.opacity, targetLungsOp, 0.08);
 
     // Realistic cardiac cycle: "lub-dub" double pump rhythm (~72 bpm)
     if (heartGroupRef.current) {
@@ -207,7 +225,7 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
         pulse = Math.sin(((beatCycle - 0.22) / 0.20) * Math.PI) * 0.14;
       }
       heartGroupRef.current.scale.setScalar(1 + pulse);
-      materials.heart.emissiveIntensity = 0.4 + pulse * 1.5;
+      materials.heart.emissiveIntensity = 0.5 + pulse * 1.8;
     }
 
     // Respiratory rhythm expansion
@@ -227,50 +245,50 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
       {/* 1. ANATOMICAL BRAIN & CEREBRAL CORTEX */}
       <group
         ref={brainGroupRef}
-        position={[0, 1.54, -0.01]}
+        position={[0, 1.48, -0.01]}
         onClick={(e) => {
           e.stopPropagation();
           onHotspotClick?.('neurological');
         }}
       >
-        <mesh material={materials.brain} position={[-0.08, 0.02, 0]} scale={[0.75, 0.92, 1.05]}>
-          <sphereGeometry args={[0.20, 32, 32]} />
+        <mesh material={materials.brain} position={[-0.075, 0.02, 0]} scale={[0.75, 0.92, 1.05]}>
+          <sphereGeometry args={[0.19, 32, 32]} />
         </mesh>
-        <mesh material={materials.brain} position={[0.08, 0.02, 0]} scale={[0.75, 0.92, 1.05]}>
-          <sphereGeometry args={[0.20, 32, 32]} />
+        <mesh material={materials.brain} position={[0.075, 0.02, 0]} scale={[0.75, 0.92, 1.05]}>
+          <sphereGeometry args={[0.19, 32, 32]} />
         </mesh>
 
         {/* Cortical Gyri Lobe Accents */}
-        <mesh material={materials.brain} position={[-0.09, 0.07, 0.09]} scale={[0.07, 0.05, 0.07]}>
+        <mesh material={materials.brain} position={[-0.085, 0.07, 0.08]} scale={[0.065, 0.05, 0.065]}>
           <sphereGeometry args={[1, 16, 16]} />
         </mesh>
-        <mesh material={materials.brain} position={[0.09, 0.07, 0.09]} scale={[0.07, 0.05, 0.07]}>
+        <mesh material={materials.brain} position={[0.085, 0.07, 0.08]} scale={[0.065, 0.05, 0.065]}>
           <sphereGeometry args={[1, 16, 16]} />
         </mesh>
 
         {/* Cerebellum */}
-        <mesh material={materials.cerebellum} position={[-0.065, -0.11, -0.10]} scale={[0.09, 0.07, 0.08]}>
+        <mesh material={materials.cerebellum} position={[-0.06, -0.10, -0.09]} scale={[0.085, 0.065, 0.075]}>
           <sphereGeometry args={[1, 24, 24]} />
         </mesh>
-        <mesh material={materials.cerebellum} position={[0.065, -0.11, -0.10]} scale={[0.09, 0.07, 0.08]}>
+        <mesh material={materials.cerebellum} position={[0.06, -0.10, -0.09]} scale={[0.085, 0.065, 0.075]}>
           <sphereGeometry args={[1, 24, 24]} />
         </mesh>
 
         {/* Brainstem */}
-        <mesh material={materials.cerebellum} position={[0, -0.16, -0.04]} scale={[0.045, 0.13, 0.045]}>
+        <mesh material={materials.cerebellum} position={[0, -0.15, -0.03]} scale={[0.04, 0.12, 0.04]}>
           <cylinderGeometry args={[0.7, 0.9, 1, 16]} />
         </mesh>
 
         {/* Parkinson's Substantia Nigra Core Highlight */}
         {activeCondition === 'parkinsons' && (
           <mesh position={[0, -0.05, -0.02]}>
-            <sphereGeometry args={[0.075, 16, 16]} />
+            <sphereGeometry args={[0.07, 16, 16]} />
             <meshStandardMaterial
               color="#fbbf24"
               emissive="#f59e0b"
-              emissiveIntensity={1.2}
+              emissiveIntensity={1.4}
               transparent
-              opacity={0.85}
+              opacity={0.9}
             />
           </mesh>
         )}
@@ -286,10 +304,10 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
             />
           </bufferGeometry>
           <pointsMaterial
-            size={0.020}
+            size={0.022}
             color={activeCondition === 'depression' ? '#60a5fa' : activeCondition === 'parkinsons' ? '#fbbf24' : '#ec4899'}
             transparent
-            opacity={isBrain ? 0.9 : 0.2}
+            opacity={isBrain ? 0.95 : 0.35}
             blending={THREE.AdditiveBlending}
             depthWrite={false}
           />
@@ -299,7 +317,7 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
       {/* 2. ANATOMICAL HEART & AORTA */}
       <group
         ref={heartGroupRef}
-        position={[0.06, 0.54, 0.07]}
+        position={[0.06, 0.52, 0.07]}
         rotation={[0.18, 0.15, -0.32]}
         onClick={(e) => {
           e.stopPropagation();
@@ -350,7 +368,7 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
         }}
       >
         {/* Trachea */}
-        <mesh material={materials.bronchi} position={[0, 0.76, 0.08]} scale={[0.030, 0.22, 0.030]}>
+        <mesh material={materials.bronchi} position={[0, 0.74, 0.08]} scale={[0.030, 0.22, 0.030]}>
           <cylinderGeometry args={[0.9, 0.9, 1, 16]} />
         </mesh>
 
@@ -369,16 +387,16 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
               <meshStandardMaterial
                 color="#7dd3fc"
                 emissive="#0284c7"
-                emissiveIntensity={isLungs ? 0.9 : 0.4}
+                emissiveIntensity={isLungs ? 0.95 : 0.45}
                 transparent
-                opacity={isLungs ? 0.85 : 0.15}
+                opacity={isLungs ? 0.9 : 0.25}
               />
             </mesh>
           );
         })}
 
         {/* Right Lung (3 Anatomical Lobes) */}
-        <group position={[0.18, 0.48, 0.02]}>
+        <group position={[0.18, 0.46, 0.02]}>
           <mesh material={materials.lungs} position={[0, 0.11, 0]} scale={[0.10, 0.15, 0.13]}>
             <capsuleGeometry args={[0.6, 0.7, 12, 20]} />
           </mesh>
@@ -391,7 +409,7 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
         </group>
 
         {/* Left Lung (2 Lobes with Cardiac Notch) */}
-        <group position={[-0.18, 0.48, 0.02]}>
+        <group position={[-0.18, 0.46, 0.02]}>
           <mesh material={materials.lungs} position={[0, 0.10, 0]} scale={[0.095, 0.17, 0.12]}>
             <capsuleGeometry args={[0.6, 0.7, 12, 20]} />
           </mesh>
@@ -412,9 +430,9 @@ function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore }) {
   if (!isExplore) return null;
 
   const hotspots = [
-    { id: 'neurological', pos: [0, 1.54, 0.28] },
-    { id: 'cardiovascular', pos: [0.08, 0.54, 0.28] },
-    { id: 'asthma', pos: [-0.18, 0.48, 0.26] },
+    { id: 'neurological', pos: [0, 1.48, 0.28] },
+    { id: 'cardiovascular', pos: [0.08, 0.52, 0.28] },
+    { id: 'asthma', pos: [-0.18, 0.46, 0.26] },
   ];
 
   return (
@@ -433,9 +451,9 @@ function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore }) {
             <mesh>
               <ringGeometry args={[0.045, 0.055, 32]} />
               <meshBasicMaterial
-                color={isActive ? '#38bdf8' : '#a4b8f7'}
+                color={isActive ? '#38bdf8' : '#60a5fa'}
                 transparent
-                opacity={isActive ? 0.9 : 0.45}
+                opacity={isActive ? 0.95 : 0.6}
                 side={THREE.DoubleSide}
               />
             </mesh>
@@ -444,7 +462,7 @@ function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore }) {
               <meshStandardMaterial
                 color={isActive ? '#38bdf8' : '#ffffff'}
                 emissive={isActive ? '#0284c7' : '#4A6CF7'}
-                emissiveIntensity={1.2}
+                emissiveIntensity={1.4}
               />
             </mesh>
           </group>
@@ -457,7 +475,7 @@ function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore }) {
 /* ——————————————————————————————————————————————————————————————————————————
    LUMINOUS AMBIENT PARTICLES
    —————————————————————————————————————————————————————————————————————————— */
-function AmbientParticles({ count = 90 }) {
+function AmbientParticles({ count = 80 }) {
   const ref = useRef();
   const { positions } = useMemo(() => {
     const pos = new Float32Array(count * 3);
@@ -483,7 +501,7 @@ function AmbientParticles({ count = 90 }) {
       </bufferGeometry>
       <pointsMaterial
         size={0.018}
-        color="#a4b8f7"
+        color="#818cf8"
         transparent
         opacity={0.35}
         sizeAttenuation
@@ -506,12 +524,12 @@ function CameraRig({ activeCondition, isExplore }) {
   const CONDITION_VIEWS = {
     hero: { target: [0, -0.2, 0], pos: [0, -0.2, 7.8] },
     explore: { target: [-0.35, -0.2, 0], pos: [-0.35, -0.2, 7.2] },
-    asthma: { target: [0, 0.45, 0.1], pos: [-0.2, 0.45, 2.0] },
-    cardiovascular: { target: [0.18, 0.55, 0.1], pos: [0.1, 0.55, 1.8] },
-    neurological: { target: [0, 1.54, 0.1], pos: [0, 1.54, 1.5] },
-    'post-stroke': { target: [0.22, 1.42, 0.1], pos: [0.1, 1.42, 1.5] },
-    parkinsons: { target: [-0.18, 1.48, 0.1], pos: [-0.1, 1.48, 1.5] },
-    depression: { target: [0, 1.7, 0.1], pos: [0, 1.7, 1.5] },
+    asthma: { target: [0, 0.46, 0.1], pos: [-0.2, 0.46, 2.0] },
+    cardiovascular: { target: [0.12, 0.52, 0.1], pos: [0.08, 0.52, 1.8] },
+    neurological: { target: [0, 1.48, 0.1], pos: [0, 1.48, 1.5] },
+    'post-stroke': { target: [0.20, 1.40, 0.1], pos: [0.1, 1.40, 1.5] },
+    parkinsons: { target: [-0.18, 1.44, 0.1], pos: [-0.1, 1.44, 1.5] },
+    depression: { target: [0, 1.62, 0.1], pos: [0, 1.62, 1.5] },
   };
 
   useEffect(() => {
@@ -575,7 +593,7 @@ function CameraRig({ activeCondition, isExplore }) {
 }
 
 /* ——————————————————————————————————————————————————————————————————————————
-   SCENE CONTAINER
+   SCENE CONTAINER WITH HIGH-CONTRAST STUDIO LIGHTING
    —————————————————————————————————————————————————————————————————————————— */
 function HumanBodyScene({ activeCondition, onHotspotClick, gender, isExplore }) {
   const groupRef = useRef();
@@ -588,31 +606,35 @@ function HumanBodyScene({ activeCondition, onHotspotClick, gender, isExplore }) 
 
   return (
     <>
-      <ambientLight intensity={0.55} color="#e6edff" />
-      <directionalLight position={[5, 8, 5]} intensity={1.2} color="#f0f4ff" castShadow />
-      <directionalLight position={[-5, 4, 3]} intensity={0.7} color="#a5b4fc" />
-      <pointLight position={[0, 2, 4]} intensity={0.8} color="#818cf8" distance={10} />
-      <pointLight position={[2, -1, 3]} intensity={0.4} color="#c084fc" distance={8} />
+      {/* Crisp studio lighting for high visibility against light background */}
+      <ambientLight intensity={0.7} color="#f0f4ff" />
+      <directionalLight position={[4, 6, 5]} intensity={1.5} color="#ffffff" castShadow />
+      <directionalLight position={[-4, 5, 4]} intensity={1.1} color="#93c5fd" />
+      <directionalLight position={[0, -2, 4]} intensity={0.6} color="#c7d2fe" />
+
+      {/* Front fill light */}
+      <pointLight position={[0, 0.5, 3.5]} intensity={1.2} color="#60a5fa" distance={8} />
 
       {/* Rim light defining the authentic human silhouette */}
       <spotLight
         position={[0, 4, -3]}
-        angle={0.6}
-        penumbra={0.9}
-        intensity={1.2}
+        angle={0.65}
+        penumbra={0.8}
+        intensity={1.8}
         color="#38bdf8"
       />
-      {/* Soft thoracic luminescence illuminating internal organs */}
-      <pointLight position={[0, 0.5, 0]} intensity={isExplore ? 0.65 : 0.25} color="#60a5fa" distance={3} />
+
+      {/* Thoracic internal illumination */}
+      <pointLight position={[0, 0.5, 0]} intensity={isExplore ? 0.8 : 0.4} color="#60a5fa" distance={3} />
 
       <Float speed={1.1} rotationIntensity={0.05} floatIntensity={0.20}>
         <group ref={groupRef} position={[0, 0, 0]}>
-          {/* Authentic realistic 3D mesh model */}
+          {/* Authentic realistic 3D mesh model with dual-layer shader */}
           <Suspense fallback={null}>
             <RealisticHumanModel gender={gender} />
           </Suspense>
 
-          {/* Internal Organs (Brain, Heart, Lungs) inside the translucent body */}
+          {/* Internal Organs (Brain, Heart, Lungs) */}
           <DetailedInternalOrgans activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
 
           {/* Interactive Hotspot Targets */}
@@ -626,16 +648,16 @@ function HumanBodyScene({ activeCondition, onHotspotClick, gender, isExplore }) 
 
       <ContactShadows
         position={[0, -2.35, 0]}
-        opacity={0.35}
+        opacity={0.4}
         scale={6.5}
-        blur={2.4}
+        blur={2.2}
         far={4.5}
-        color="#3b82f6"
+        color="#2563eb"
       />
 
-      <AmbientParticles count={90} />
+      <AmbientParticles count={80} />
       <CameraRig activeCondition={activeCondition} isExplore={isExplore} />
-      <Environment preset="city" environmentIntensity={0.75} />
+      <Environment preset="city" environmentIntensity={0.85} />
     </>
   );
 }
@@ -662,11 +684,11 @@ export default function HumanBody3D({ activeCondition, onHotspotClick, style, ge
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '72%',
-          height: '72%',
+          width: '75%',
+          height: '75%',
           borderRadius: '50%',
           background:
-            'radial-gradient(circle, rgba(74,108,247,0.16) 0%, rgba(139,92,246,0.08) 42%, transparent 70%)',
+            'radial-gradient(circle, rgba(59,130,246,0.18) 0%, rgba(139,92,246,0.09) 45%, transparent 70%)',
           filter: 'blur(55px)',
           pointerEvents: 'none',
           animation: 'pulse 4s ease-in-out infinite',
