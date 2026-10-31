@@ -525,6 +525,29 @@
   margin-bottom: 12px;
 }
 
+.detailCloseBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.detailCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  color: var(--text-primary);
+}
+
 .detailTitle {
   font-family: var(--font-display);
   font-size: 1.35rem;
