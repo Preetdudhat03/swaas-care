@@ -292,33 +292,123 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .content {
+    padding: 0 24px;
+    gap: 24px;
+  }
+}
+
 @media (max-width: 768px) {
+  .page {
+    padding-top: 76px;
+    padding-bottom: 40px;
+  }
+
   .content {
     padding: 0 16px;
+    gap: 20px;
   }
 
   .header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 14px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .timeframeToggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .timeframeBtn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+  }
+
+  .calendarSection {
+    padding: 20px 16px;
+  }
+
+  .calendarDay {
+    width: 42px;
+    padding: 8px 4px;
+    gap: 4px;
+  }
+
+  .calendarDate {
+    font-size: 0.75rem;
+  }
+
+  .trendSection {
+    padding: 20px 16px;
   }
 
   .trendHeader {
     flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
+  }
+
+  .biomarkerTabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .biomarkerTab {
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .entryCard {
-    flex-wrap: wrap;
-    gap: 12px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 14px;
   }
 
   .entryMetrics {
-    flex-wrap: wrap;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 12px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .calendarGrid {
+    gap: 6px;
   }
 
   .calendarDay {
-    width: 44px;
+    width: 36px;
+    padding: 6px 2px;
+  }
+
+  .entryCard {
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+  }
+
+  .entryCard :global(.badge) {
+    grid-column: 1 / -1;
+    justify-self: flex-start;
+  }
+
+  .entryMetrics {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, 1fr);
+    background: rgba(255, 255, 255, 0.15);
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
   }
 }
