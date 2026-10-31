@@ -351,8 +351,8 @@ function RealisticHeart({ activeCondition, onHotspotClick, gender = 'female' }) 
 
   const isHeart = activeCondition === 'cardiovascular';
   const isMale = gender === 'male';
-  const heartPos = isMale ? [-0.035, 0.58, 0.09] : [-0.035, 0.50, 0.09];
-  const baseScale = isMale ? 2.25 : 2.05;
+  const heartPos = isMale ? [-0.035, 0.79, 0.08] : [-0.035, 0.73, 0.07];
+  const baseScale = isMale ? 1.45 : 1.32;
 
   const heartModel = useMemo(() => {
     if (!gltf || !gltf.scene) return null;
