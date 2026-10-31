@@ -42,7 +42,18 @@ function encodeWAV(samples) {
 
 const RECORD_DURATION = 15;
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+function getApiBaseUrl() {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    const trimmed = envUrl.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    return `https://${trimmed}`;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')) {
+    return 'https://swaascare-backend.onrender.com';
+  }
+  return 'http://127.0.0.1:8000';
+}
 
 export default function RecordPage() {
   const [state, setState] = useState('idle'); // idle | recording | processing | results | saved
