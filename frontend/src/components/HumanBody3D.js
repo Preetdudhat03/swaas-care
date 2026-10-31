@@ -246,8 +246,8 @@ function RealisticBrain({ activeCondition, onHotspotClick }) {
 
   return (
     <group
-      position={[0, 1.63, 0.08]}
-      scale={[0.078, 0.078, 0.078]}
+      position={[0, 1.625, 0.075]}
+      scale={[0.10, 0.10, 0.10]}
       onClick={(e) => {
         e.stopPropagation();
         onHotspotClick?.('neurological');
