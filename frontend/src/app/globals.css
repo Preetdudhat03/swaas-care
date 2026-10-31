@@ -117,13 +117,14 @@ img {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.15;
+  overflow-wrap: break-word;
 }
 
-h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); }
-h2 { font-size: clamp(2rem, 4vw, 3rem); }
-h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
-h4 { font-size: clamp(1.125rem, 2vw, 1.5rem); }
+h1 { font-size: clamp(1.85rem, 5vw, 4.5rem); }
+h2 { font-size: clamp(1.4rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.15rem, 3vw, 2rem); }
+h4 { font-size: clamp(1rem, 2vw, 1.5rem); }
 
 /* ---- Utility Classes — True Glassmorphism ---- */
 .glass-panel {
