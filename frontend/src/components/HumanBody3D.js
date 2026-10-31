@@ -533,8 +533,8 @@ function RealisticLungs({ activeCondition, onHotspotClick, gender = 'female' }) 
   return (
     <group
       ref={groupRef}
-      position={[0, 0.525, 0.05]}
-      scale={[0.13, 0.13, 0.13]}
+      position={lungsPos}
+      scale={[baseScale, baseScale, baseScale]}
       onClick={(e) => {
         e.stopPropagation();
         onHotspotClick?.('asthma');
