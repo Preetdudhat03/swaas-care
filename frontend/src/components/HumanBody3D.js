@@ -402,7 +402,6 @@ function RealisticHeart({ activeCondition, onHotspotClick, gender = 'female' }) 
     }
 
     if (groupRef.current) {
-      const baseScale = 2.05;
       groupRef.current.scale.setScalar(baseScale * (1 + pulse));
     }
 
