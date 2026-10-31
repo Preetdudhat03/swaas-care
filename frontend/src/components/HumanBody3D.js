@@ -794,13 +794,14 @@ function HumanBodyScene({ activeCondition, onHotspotClick, gender, isExplore }) 
           </ModelErrorBoundary>
 
           {/* Internal Organs (Brain, Heart, Lungs) */}
-          <DetailedInternalOrgans activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
+          <DetailedInternalOrgans activeCondition={activeCondition} onHotspotClick={onHotspotClick} gender={gender} />
 
           {/* Interactive Hotspot Targets */}
           <InteractiveHotspots
             activeCondition={activeCondition}
             onHotspotClick={onHotspotClick}
             isExplore={isExplore}
+            gender={gender}
           />
         </group>
       </Float>
@@ -815,7 +816,7 @@ function HumanBodyScene({ activeCondition, onHotspotClick, gender, isExplore }) 
       />
 
       <AmbientParticles count={80} />
-      <CameraRig activeCondition={activeCondition} isExplore={isExplore} />
+      <CameraRig activeCondition={activeCondition} isExplore={isExplore} gender={gender} />
       <Environment preset="city" environmentIntensity={0.85} />
     </>
   );
