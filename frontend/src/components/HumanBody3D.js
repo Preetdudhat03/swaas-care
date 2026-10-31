@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useRef, useMemo, useState, useEffect, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float, Environment, ContactShadows } from '@react-three/drei';
@@ -268,7 +268,7 @@ function Particles({ count = 80 }) {
 
 /* ΓÇöΓÇöΓÇö Smooth Camera Flight Rig ΓÇöΓÇöΓÇö */
 function CameraRig({ activeCondition, isExplore }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const mouse = useRef({ x: 0, y: 0 });
   const lookAtTarget = useRef(new THREE.Vector3(0, -0.2, 0));
   const posTarget = useRef(new THREE.Vector3(0, -0.2, 7.8));
@@ -302,17 +302,51 @@ function CameraRig({ activeCondition, isExplore }) {
     }
     const view = CONDITION_VIEWS[viewKey] || CONDITION_VIEWS['explore'];
     
+    // Viewport responsiveness: on narrow/portrait screens, scale distance so figure fits horizontally & vertically
+    const aspect = size.width / (size.height || 1);
+    const isMobile = size.width < 768;
+
+    let baseTargetX = view.target[0];
+    let baseTargetY = view.target[1];
+    let basePosX = view.pos[0];
+    let basePosY = view.pos[1];
+    let basePosZ = view.pos[2];
+
+    if (isMobile) {
+      if (viewKey === 'hero') {
+        // Adjust for mobile vertical aspect ratio so human figure is never cut off
+        if (aspect < 0.65) {
+          basePosZ = view.pos[2] * Math.min(1.35, 0.65 / aspect);
+        }
+      } else if (viewKey === 'explore') {
+        // On mobile explore overview, center horizontally and lift slightly for the bottom sheet
+        baseTargetX = 0;
+        basePosX = 0;
+        baseTargetY = 0.2;
+        basePosY = 0.2;
+        if (aspect < 0.65) {
+          basePosZ = 7.6 * Math.min(1.3, 0.65 / aspect);
+        }
+      } else {
+        // On mobile organ zoom, center horizontally and position in top half of screen
+        baseTargetX = 0;
+        basePosX = 0;
+        baseTargetY = view.target[1] - 0.25;
+        basePosY = view.pos[1] - 0.25;
+      }
+    }
+
     // Add subtle mouse parallax on top of the target destination
-    const targetX = view.pos[0] + mouse.current.x * 0.12;
-    const targetY = view.pos[1] - mouse.current.y * 0.12;
-    const targetZ = view.pos[2];
+    const targetX = basePosX + mouse.current.x * 0.12;
+    const targetY = basePosY - mouse.current.y * 0.12;
+    const targetZ = basePosZ;
 
     // Smoothly interpolate position
     posTarget.current.set(targetX, targetY, targetZ);
     camera.position.lerp(posTarget.current, 0.04);
 
     // Smoothly interpolate lookAt target
-    lookAtTarget.current.lerp(new THREE.Vector3(...view.target), 0.04);
+    lookAtTarget.current.lerp(new THREE.Vector3(baseTargetX, baseTargetY, view.target[2] || 0), 0.04);
     camera.lookAt(lookAtTarget.current);
   });
 
