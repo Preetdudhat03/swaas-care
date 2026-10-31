@@ -147,329 +147,371 @@ function FallbackAnatomicalFigure({ gender = 'female' }) {
 }
 
 /* ——————————————————————————————————————————————————————————————————————————
-   DETAILED INTERNAL ORGANS
-   - Brain: Left & right cerebral hemispheres, gyri/sulci, cerebellum, brainstem,
-     and dynamic synaptic firing sparks.
-   - Heart: Muscular ventricles, atria, ascending aorta arch with 3 arteries,
-     pulmonary trunk, and realistic double-beat (lub-dub) cardiac cycle!
-   - Lungs & Bronchial Tree: Trachea, primary bronchi bifurcation, secondary
-     branching arborization, 3-lobed right lung, 2-lobed left lung with cardiac notch.
+   REALISTIC ANATOMICAL BRAIN COMPONENT
+   Loads authentic BodyParts3D neuroanatomy model with 65 segmented brain structures
+   (cerebral cortex, gyri/sulci, cerebellum, brainstem, hippocampus, ventricles)
+   fitted snugly inside the cranium with reactive synaptic neural firing.
    —————————————————————————————————————————————————————————————————————————— */
-function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
-  const heartGroupRef = useRef();
-  const lungsGroupRef = useRef();
-  const brainGroupRef = useRef();
+function RealisticBrain({ activeCondition, onHotspotClick }) {
+  const gltf = useGLTF('/models/brain.glb');
+  const matRef = useRef();
   const synapsePointsRef = useRef();
 
   const isBrain = ['neurological', 'post-stroke', 'depression', 'parkinsons'].includes(activeCondition);
-  const isHeart = activeCondition === 'cardiovascular';
-  const isLungs = activeCondition === 'asthma';
 
-  // Synaptic sparks for the brain
+  // Synaptic sparks around the cerebral cortex
   const { synapsePositions } = useMemo(() => {
-    const count = 48;
+    const count = 50;
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI * 0.65;
-      const r = 0.19 + Math.random() * 0.04;
+      const phi = Math.random() * Math.PI * 0.7;
+      const r = 0.12 + Math.random() * 0.025;
       pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      pos[i * 3 + 1] = 1.48 + r * Math.cos(phi) * 0.8;
-      pos[i * 3 + 2] = -0.01 + r * Math.sin(phi) * Math.sin(theta);
+      pos[i * 3 + 1] = r * Math.cos(phi) * 0.85;
+      pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
     }
     return { synapsePositions: pos };
   }, []);
 
-  // Airway tree branching segments
-  const airwayBranches = useMemo(() => {
-    return [
-      { start: [0, 0.60, 0.08], end: [0.09, 0.52, 0.06], r: 0.016 },
-      { start: [0, 0.60, 0.08], end: [-0.09, 0.52, 0.06], r: 0.016 },
-      { start: [0.09, 0.52, 0.06], end: [0.16, 0.56, 0.04], r: 0.011 },
-      { start: [0.09, 0.52, 0.06], end: [0.18, 0.46, 0.05], r: 0.011 },
-      { start: [0.09, 0.52, 0.06], end: [0.14, 0.36, 0.03], r: 0.010 },
-      { start: [-0.09, 0.52, 0.06], end: [-0.16, 0.54, 0.04], r: 0.011 },
-      { start: [-0.09, 0.52, 0.06], end: [-0.17, 0.40, 0.04], r: 0.011 },
-    ];
-  }, []);
+  const brainModel = useMemo(() => {
+    if (!gltf || !gltf.scene) return null;
+    const cloned = gltf.scene.clone(true);
 
-  const materials = useMemo(() => ({
-    brain: new THREE.MeshPhysicalMaterial({
-      color: '#ff2d87',
-      emissive: '#d60062',
-      emissiveIntensity: 0.5,
-      roughness: 0.25,
-      metalness: 0.1,
+    // Center the brain mesh to local (0,0,0)
+    const box = new THREE.Box3().setFromObject(cloned);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    cloned.position.sub(center);
+
+    // Rotate so brainstem points down into spine (-Y) and frontal lobe faces forward (+Z)
+    cloned.rotation.x = -Math.PI / 2;
+
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#f43f5e'), // Luminous anatomical rose
+      emissive: new THREE.Color('#db2777'),
+      emissiveIntensity: 0.55,
+      roughness: 0.32,
+      metalness: 0.12,
+      clearcoat: 0.85,
+      clearcoatRoughness: 0.15,
       transparent: true,
-      opacity: 0.15,
-      depthWrite: false,
-    }),
-    cerebellum: new THREE.MeshStandardMaterial({
-      color: '#e62e78',
-      emissive: '#b0004e',
-      emissiveIntensity: 0.45,
-      roughness: 0.35,
-      transparent: true,
-      opacity: 0.15,
-      depthWrite: false,
-    }),
-    heart: new THREE.MeshPhysicalMaterial({
-      color: '#ff1447',
-      emissive: '#c7002e',
+      opacity: 0.85,
+      depthWrite: true,
+      depthTest: true,
+    });
+    matRef.current = mat;
+
+    cloned.traverse((child) => {
+      if (child.isMesh) {
+        child.material = mat;
+        child.renderOrder = 1;
+        child.castShadow = true;
+      }
+    });
+
+    const wrapper = new THREE.Group();
+    wrapper.add(cloned);
+    return wrapper;
+  }, [gltf]);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    if (matRef.current) {
+      const targetOp = isBrain ? 0.98 : 0.65;
+      matRef.current.opacity = THREE.MathUtils.lerp(matRef.current.opacity, targetOp, 0.08);
+
+      const targetEmissive = isBrain ? 1.1 + Math.sin(t * 3.5) * 0.35 : 0.5;
+      matRef.current.emissiveIntensity = THREE.MathUtils.lerp(
+        matRef.current.emissiveIntensity,
+        targetEmissive,
+        0.08
+      );
+
+      if (activeCondition === 'parkinsons') {
+        matRef.current.emissive.set('#f59e0b');
+      } else if (activeCondition === 'depression') {
+        matRef.current.emissive.set('#3b82f6');
+      } else {
+        matRef.current.emissive.set('#db2777');
+      }
+    }
+
+    if (synapsePointsRef.current) {
+      synapsePointsRef.current.rotation.y = t * 0.12;
+    }
+  });
+
+  if (!brainModel) return null;
+
+  return (
+    <group
+      position={[0, 1.51, 0.06]}
+      scale={[0.082, 0.082, 0.082]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onHotspotClick?.('neurological');
+      }}
+    >
+      <primitive object={brainModel} />
+
+      {/* Synaptic neural firing particles */}
+      <points ref={synapsePointsRef} position={[0, 0, 0]} scale={[12, 12, 12]}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={synapsePositions.length / 3}
+            array={synapsePositions}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.016}
+          color={
+            activeCondition === 'depression'
+              ? '#60a5fa'
+              : activeCondition === 'parkinsons'
+              ? '#fbbf24'
+              : '#f43f5e'
+          }
+          transparent
+          opacity={isBrain ? 0.95 : 0.35}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </points>
+    </group>
+  );
+}
+
+/* ——————————————————————————————————————————————————————————————————————————
+   REALISTIC ANATOMICAL HEART COMPONENT
+   Loads authentic NIH Visible Human heart model featuring ventricles, atria,
+   interventricular septum, and cardiac valves, with dynamic "lub-dub" double pulse.
+   —————————————————————————————————————————————————————————————————————————— */
+function RealisticHeart({ activeCondition, onHotspotClick }) {
+  const gltf = useGLTF('/models/heart.glb');
+  const groupRef = useRef();
+  const matRef = useRef();
+
+  const isHeart = activeCondition === 'cardiovascular';
+
+  const heartModel = useMemo(() => {
+    if (!gltf || !gltf.scene) return null;
+    const cloned = gltf.scene.clone(true);
+
+    const box = new THREE.Box3().setFromObject(cloned);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    cloned.position.sub(center);
+
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#ef4444'), // Anatomical crimson
+      emissive: new THREE.Color('#b91c1c'),
       emissiveIntensity: 0.65,
       roughness: 0.22,
-      metalness: 0.15,
+      metalness: 0.18,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
       transparent: true,
-      opacity: 0.2,
-      depthWrite: false,
-    }),
-    aorta: new THREE.MeshStandardMaterial({
-      color: '#ff3366',
-      emissive: '#d10038',
-      emissiveIntensity: 0.55,
-      roughness: 0.3,
-      transparent: true,
-      opacity: 0.2,
-      depthWrite: false,
-    }),
-    lungs: new THREE.MeshPhysicalMaterial({
-      color: '#38bdf8',
-      emissive: '#0284c7',
-      emissiveIntensity: 0.55,
-      roughness: 0.3,
-      metalness: 0.1,
-      transparent: true,
-      opacity: 0.15,
-      depthWrite: false,
-    }),
-    bronchi: new THREE.MeshStandardMaterial({
-      color: '#bae6fd',
-      emissive: '#38bdf8',
-      emissiveIntensity: 0.7,
-      roughness: 0.2,
-      transparent: true,
-      opacity: 0.2,
-      depthWrite: false,
-    }),
-  }), []);
+      opacity: 0.9,
+      depthWrite: true,
+      depthTest: true,
+    });
+    matRef.current = mat;
+
+    cloned.traverse((child) => {
+      if (child.isMesh) {
+        child.material = mat;
+        child.renderOrder = 1;
+        child.castShadow = true;
+      }
+    });
+
+    const wrapper = new THREE.Group();
+    wrapper.add(cloned);
+    return wrapper;
+  }, [gltf]);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
 
-    const targetBrainOp = isBrain ? 0.95 : 0.18;
-    const targetHeartOp = isHeart ? 0.98 : 0.22;
-    const targetLungsOp = isLungs ? 0.92 : 0.18;
-
-    materials.brain.opacity = THREE.MathUtils.lerp(materials.brain.opacity, targetBrainOp, 0.08);
-    materials.cerebellum.opacity = THREE.MathUtils.lerp(materials.cerebellum.opacity, targetBrainOp * 0.9, 0.08);
-    materials.heart.opacity = THREE.MathUtils.lerp(materials.heart.opacity, targetHeartOp, 0.08);
-    materials.aorta.opacity = THREE.MathUtils.lerp(materials.aorta.opacity, targetHeartOp, 0.08);
-    materials.lungs.opacity = THREE.MathUtils.lerp(materials.lungs.opacity, targetLungsOp, 0.08);
-    materials.bronchi.opacity = THREE.MathUtils.lerp(materials.bronchi.opacity, targetLungsOp, 0.08);
-
-    // Realistic cardiac cycle: "lub-dub" double pump rhythm (~72 bpm)
-    if (heartGroupRef.current) {
-      const beatCycle = (t * 1.25) % 1.0;
-      let pulse = 0;
-      if (beatCycle < 0.15) {
-        pulse = Math.sin((beatCycle / 0.15) * Math.PI) * 0.08;
-      } else if (beatCycle >= 0.22 && beatCycle < 0.42) {
-        pulse = Math.sin(((beatCycle - 0.22) / 0.20) * Math.PI) * 0.14;
-      }
-      heartGroupRef.current.scale.setScalar(1 + pulse);
-      materials.heart.emissiveIntensity = 0.5 + pulse * 1.8;
+    // Realistic cardiac cycle: "lub-dub" double pump (~72 bpm = 1.25 Hz)
+    const beatCycle = (t * 1.25) % 1.0;
+    let pulse = 0;
+    if (beatCycle < 0.14) {
+      pulse = Math.sin((beatCycle / 0.14) * Math.PI) * 0.08;
+    } else if (beatCycle >= 0.20 && beatCycle < 0.38) {
+      pulse = Math.sin(((beatCycle - 0.20) / 0.18) * Math.PI) * 0.13;
     }
 
-    // Respiratory rhythm expansion
-    if (lungsGroupRef.current) {
-      const breath = Math.sin(t * 1.5) * 0.04;
-      lungsGroupRef.current.scale.set(1 + breath * 0.8, 1 + breath * 0.5, 1 + breath * 1.2);
+    if (groupRef.current) {
+      const baseScale = 1.45;
+      groupRef.current.scale.setScalar(baseScale * (1 + pulse));
     }
 
-    // Brain synaptic flicker
-    if (synapsePointsRef.current) {
-      synapsePointsRef.current.rotation.y = t * 0.05;
+    if (matRef.current) {
+      const targetOp = isHeart ? 1.0 : 0.75;
+      matRef.current.opacity = THREE.MathUtils.lerp(matRef.current.opacity, targetOp, 0.08);
+
+      const targetEmissive = isHeart ? 0.9 + pulse * 2.2 : 0.55 + pulse * 1.2;
+      matRef.current.emissiveIntensity = THREE.MathUtils.lerp(
+        matRef.current.emissiveIntensity,
+        targetEmissive,
+        0.15
+      );
     }
   });
 
+  if (!heartModel) return null;
+
+  return (
+    <group
+      ref={groupRef}
+      position={[-0.02, 0.49, 0.08]}
+      rotation={[0.12, 0.15, -0.25]}
+      scale={[1.45, 1.45, 1.45]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onHotspotClick?.('cardiovascular');
+      }}
+    >
+      <primitive object={heartModel} />
+    </group>
+  );
+}
+
+/* ——————————————————————————————————————————————————————————————————————————
+   REALISTIC ANATOMICAL LUNGS COMPONENT
+   Loads authentic OrganUI / BodyParts3D lungs model featuring full trachea,
+   bronchial tree, right and left lung lobes, and tidal respiration expansion.
+   —————————————————————————————————————————————————————————————————————————— */
+function RealisticLungs({ activeCondition, onHotspotClick }) {
+  const gltf = useGLTF('/models/lungs.glb');
+  const groupRef = useRef();
+  const lungMatRef = useRef();
+  const airwayMatRef = useRef();
+
+  const isLungs = activeCondition === 'asthma';
+
+  const lungsModel = useMemo(() => {
+    if (!gltf || !gltf.scene) return null;
+    const cloned = gltf.scene.clone(true);
+
+    const box = new THREE.Box3().setFromObject(cloned);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    cloned.position.sub(center);
+
+    const lungMat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#38bdf8'), // Clean respiratory cyan
+      emissive: new THREE.Color('#0284c7'),
+      emissiveIntensity: 0.55,
+      roughness: 0.28,
+      metalness: 0.12,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.12,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: true,
+      depthTest: true,
+    });
+    lungMatRef.current = lungMat;
+
+    const airwayMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#bae6fd'),
+      emissive: new THREE.Color('#38bdf8'),
+      emissiveIntensity: 0.75,
+      roughness: 0.2,
+      transparent: true,
+      opacity: 0.92,
+      depthWrite: true,
+      depthTest: true,
+    });
+    airwayMatRef.current = airwayMat;
+
+    cloned.traverse((child) => {
+      if (child.isMesh) {
+        // FMA7394 is the trachea/windpipe structure
+        child.material = child.name === 'FMA7394' ? airwayMat : lungMat;
+        child.renderOrder = 1;
+        child.castShadow = true;
+      }
+    });
+
+    const wrapper = new THREE.Group();
+    wrapper.add(cloned);
+    return wrapper;
+  }, [gltf]);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    // Respiratory rhythm expansion & contraction (breathing)
+    const breath = Math.sin(t * 1.35) * 0.045;
+
+    if (groupRef.current) {
+      const baseScale = 0.095;
+      groupRef.current.scale.set(
+        baseScale * (1 + breath * 0.75),
+        baseScale * (1 + breath * 0.45),
+        baseScale * (1 + breath * 1.1)
+      );
+    }
+
+    if (lungMatRef.current) {
+      const targetOp = isLungs ? 0.98 : 0.65;
+      lungMatRef.current.opacity = THREE.MathUtils.lerp(lungMatRef.current.opacity, targetOp, 0.08);
+
+      const targetEmissive = isLungs ? 1.05 + breath * 0.6 : 0.5 + breath * 0.25;
+      lungMatRef.current.emissiveIntensity = THREE.MathUtils.lerp(
+        lungMatRef.current.emissiveIntensity,
+        targetEmissive,
+        0.08
+      );
+    }
+  });
+
+  if (!lungsModel) return null;
+
+  return (
+    <group
+      ref={groupRef}
+      position={[0, 0.51, 0.05]}
+      scale={[0.095, 0.095, 0.095]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onHotspotClick?.('asthma');
+      }}
+    >
+      <primitive object={lungsModel} />
+    </group>
+  );
+}
+
+/* ——————————————————————————————————————————————————————————————————————————
+   AUTHENTIC INTERNAL ORGANS CONTAINER
+   Encapsulates Brain, Heart, and Lungs with error boundaries and suspense.
+   —————————————————————————————————————————————————————————————————————————— */
+function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
   return (
     <group>
-      {/* 1. ANATOMICAL BRAIN & CEREBRAL CORTEX */}
-      <group
-        ref={brainGroupRef}
-        position={[0, 1.48, -0.01]}
-        onClick={(e) => {
-          e.stopPropagation();
-          onHotspotClick?.('neurological');
-        }}
-      >
-        <mesh material={materials.brain} position={[-0.075, 0.02, 0]} scale={[0.75, 0.92, 1.05]}>
-          <sphereGeometry args={[0.19, 32, 32]} />
-        </mesh>
-        <mesh material={materials.brain} position={[0.075, 0.02, 0]} scale={[0.75, 0.92, 1.05]}>
-          <sphereGeometry args={[0.19, 32, 32]} />
-        </mesh>
+      <ModelErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <RealisticBrain activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
+        </Suspense>
+      </ModelErrorBoundary>
 
-        {/* Cortical Gyri Lobe Accents */}
-        <mesh material={materials.brain} position={[-0.085, 0.07, 0.08]} scale={[0.065, 0.05, 0.065]}>
-          <sphereGeometry args={[1, 16, 16]} />
-        </mesh>
-        <mesh material={materials.brain} position={[0.085, 0.07, 0.08]} scale={[0.065, 0.05, 0.065]}>
-          <sphereGeometry args={[1, 16, 16]} />
-        </mesh>
+      <ModelErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <RealisticLungs activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
+        </Suspense>
+      </ModelErrorBoundary>
 
-        {/* Cerebellum */}
-        <mesh material={materials.cerebellum} position={[-0.06, -0.10, -0.09]} scale={[0.085, 0.065, 0.075]}>
-          <sphereGeometry args={[1, 24, 24]} />
-        </mesh>
-        <mesh material={materials.cerebellum} position={[0.06, -0.10, -0.09]} scale={[0.085, 0.065, 0.075]}>
-          <sphereGeometry args={[1, 24, 24]} />
-        </mesh>
-
-        {/* Brainstem */}
-        <mesh material={materials.cerebellum} position={[0, -0.15, -0.03]} scale={[0.04, 0.12, 0.04]}>
-          <cylinderGeometry args={[0.7, 0.9, 1, 16]} />
-        </mesh>
-
-        {/* Parkinson's Substantia Nigra Core Highlight */}
-        {activeCondition === 'parkinsons' && (
-          <mesh position={[0, -0.05, -0.02]}>
-            <sphereGeometry args={[0.07, 16, 16]} />
-            <meshStandardMaterial
-              color="#fbbf24"
-              emissive="#f59e0b"
-              emissiveIntensity={1.4}
-              transparent
-              opacity={0.9}
-            />
-          </mesh>
-        )}
-
-        {/* Synaptic Neural Firing Particles */}
-        <points ref={synapsePointsRef}>
-          <bufferGeometry>
-            <bufferAttribute
-              attach="attributes-position"
-              count={synapsePositions.length / 3}
-              array={synapsePositions}
-              itemSize={3}
-            />
-          </bufferGeometry>
-          <pointsMaterial
-            size={0.022}
-            color={activeCondition === 'depression' ? '#60a5fa' : activeCondition === 'parkinsons' ? '#fbbf24' : '#ec4899'}
-            transparent
-            opacity={isBrain ? 0.95 : 0.35}
-            blending={THREE.AdditiveBlending}
-            depthWrite={false}
-          />
-        </points>
-      </group>
-
-      {/* 2. ANATOMICAL HEART & AORTA */}
-      <group
-        ref={heartGroupRef}
-        position={[0.06, 0.52, 0.07]}
-        rotation={[0.18, 0.15, -0.32]}
-        onClick={(e) => {
-          e.stopPropagation();
-          onHotspotClick?.('cardiovascular');
-        }}
-      >
-        <mesh material={materials.heart} position={[-0.04, -0.06, 0.02]} rotation={[0, 0, 0.25]} scale={[0.10, 0.17, 0.11]}>
-          <capsuleGeometry args={[0.6, 0.7, 12, 16]} />
-        </mesh>
-        <mesh material={materials.heart} position={[0.05, -0.03, 0.03]} scale={[0.09, 0.14, 0.095]}>
-          <capsuleGeometry args={[0.6, 0.7, 12, 16]} />
-        </mesh>
-        <mesh material={materials.heart} position={[-0.03, 0.07, -0.02]} scale={[0.085, 0.085, 0.085]}>
-          <sphereGeometry args={[1, 16, 16]} />
-        </mesh>
-        <mesh material={materials.heart} position={[0.055, 0.06, -0.01]} scale={[0.08, 0.08, 0.08]}>
-          <sphereGeometry args={[1, 16, 16]} />
-        </mesh>
-
-        {/* Ascending Aorta Arch */}
-        <mesh
-          material={materials.aorta}
-          position={[0.02, 0.12, 0]}
-          rotation={[0, 0, Math.PI * 0.45]}
-          scale={[0.095, 0.036, 0.036]}
-        >
-          <torusGeometry args={[0.8, 0.35, 12, 24, Math.PI * 0.85]} />
-        </mesh>
-        {/* Carotid / Brachiocephalic Branch Arteries */}
-        <mesh material={materials.aorta} position={[0.04, 0.20, 0]} scale={[0.011, 0.055, 0.011]}>
-          <cylinderGeometry args={[1, 1, 1, 8]} />
-        </mesh>
-        <mesh material={materials.aorta} position={[0.01, 0.21, 0]} scale={[0.010, 0.06, 0.010]}>
-          <cylinderGeometry args={[1, 1, 1, 8]} />
-        </mesh>
-        <mesh material={materials.aorta} position={[-0.02, 0.20, 0]} scale={[0.010, 0.055, 0.010]}>
-          <cylinderGeometry args={[1, 1, 1, 8]} />
-        </mesh>
-      </group>
-
-      {/* 3. ANATOMICAL LUNGS & BRONCHIAL ARBORIZATION */}
-      <group
-        ref={lungsGroupRef}
-        position={[0, 0, 0]}
-        onClick={(e) => {
-          e.stopPropagation();
-          onHotspotClick?.('asthma');
-        }}
-      >
-        {/* Trachea */}
-        <mesh material={materials.bronchi} position={[0, 0.74, 0.08]} scale={[0.030, 0.22, 0.030]}>
-          <cylinderGeometry args={[0.9, 0.9, 1, 16]} />
-        </mesh>
-
-        {/* Bronchial branches */}
-        {airwayBranches.map((branch, idx) => {
-          const vStart = new THREE.Vector3(...branch.start);
-          const vEnd = new THREE.Vector3(...branch.end);
-          const mid = vStart.clone().add(vEnd).multiplyScalar(0.5);
-          const dist = vStart.distanceTo(vEnd);
-          const dir = vEnd.clone().sub(vStart).normalize();
-          const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
-
-          return (
-            <mesh key={`airway-${idx}`} position={mid} quaternion={quat}>
-              <cylinderGeometry args={[branch.r * 0.8, branch.r, dist, 10]} />
-              <meshStandardMaterial
-                color="#7dd3fc"
-                emissive="#0284c7"
-                emissiveIntensity={isLungs ? 0.95 : 0.45}
-                transparent
-                opacity={isLungs ? 0.9 : 0.25}
-              />
-            </mesh>
-          );
-        })}
-
-        {/* Right Lung (3 Anatomical Lobes) */}
-        <group position={[0.18, 0.46, 0.02]}>
-          <mesh material={materials.lungs} position={[0, 0.11, 0]} scale={[0.10, 0.15, 0.13]}>
-            <capsuleGeometry args={[0.6, 0.7, 12, 20]} />
-          </mesh>
-          <mesh material={materials.lungs} position={[0.02, 0.0, 0.02]} scale={[0.09, 0.11, 0.12]}>
-            <capsuleGeometry args={[0.6, 0.7, 12, 20]} />
-          </mesh>
-          <mesh material={materials.lungs} position={[0, -0.11, -0.01]} scale={[0.10, 0.15, 0.14]}>
-            <capsuleGeometry args={[0.6, 0.7, 12, 20]} />
-          </mesh>
-        </group>
-
-        {/* Left Lung (2 Lobes with Cardiac Notch) */}
-        <group position={[-0.18, 0.46, 0.02]}>
-          <mesh material={materials.lungs} position={[0, 0.10, 0]} scale={[0.095, 0.17, 0.12]}>
-            <capsuleGeometry args={[0.6, 0.7, 12, 20]} />
-          </mesh>
-          <mesh material={materials.lungs} position={[-0.01, -0.10, -0.01]} scale={[0.095, 0.16, 0.13]}>
-            <capsuleGeometry args={[0.6, 0.7, 12, 20]} />
-          </mesh>
-        </group>
-      </group>
+      <ModelErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <RealisticHeart activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
+        </Suspense>
+      </ModelErrorBoundary>
     </group>
   );
 }
