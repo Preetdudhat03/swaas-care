@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useMemo, useState, useEffect, Suspense } from 'react';
+import React, { useRef, useMemo, useState, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float, Environment, ContactShadows, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -20,24 +20,47 @@ console.warn = (...args) => {
   _origWarn.apply(console, args);
 };
 
-// Preload the real anatomical models for seamless instant switching
-useGLTF.preload('/models/body-female.glb');
-useGLTF.preload('/models/body-male.glb');
+/* ——————————————————————————————————————————————————————————————————————————
+   BULLETPROOF ERROR BOUNDARY FOR 3D ASSETS
+   Prevents any 3D asset/loader error from bubbling up and crashing the page.
+   —————————————————————————————————————————————————————————————————————————— */
+class ModelErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error) {
+    console.warn('3D Model loader fallback activated:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || null;
+    }
+    return this.props.children;
+  }
+}
 
 /* ——————————————————————————————————————————————————————————————————————————
    HIGH-DEFINITION REALISTIC 3D HUMAN BODY MESH
    Renders the authentic continuous 3D anatomical mesh with a vibrant,
-   high-visibility medical bioluminescent physical shader + subtle cyber-lattice
-   contours so it stands out crisply and beautifully against the light background.
+   high-visibility medical bioluminescent physical shader so it stands out
+   crisply and beautifully against the light background.
    —————————————————————————————————————————————————————————————————————————— */
 function RealisticHumanModel({ gender = 'female' }) {
   const modelUrl = gender === 'male' ? '/models/body-male.glb' : '/models/body-female.glb';
-  const { scene } = useGLTF(modelUrl);
+  const gltf = useGLTF(modelUrl);
 
-  // Vibrant medical bioluminescent shader with physical depth and clearcoat
-  const { bodyMaterial, wireframeMaterial } = useMemo(() => {
-    // 1. Solid translucent body shell with specular clearcoat
-    const mat = new THREE.MeshPhysicalMaterial({
+  const model = useMemo(() => {
+    if (!gltf || !gltf.scene) return null;
+    const cloned = gltf.scene.clone(true);
+
+    const bodyMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color('#3b82f6'), // High-visibility royal medical blue
       emissive: new THREE.Color('#1e2d6b'), // Deep internal glow
       emissiveIntensity: 0.45,
@@ -52,48 +75,72 @@ function RealisticHumanModel({ gender = 'female' }) {
       side: THREE.FrontSide,
     });
 
-    // 2. Subtle medical holographic wireframe accent highlighting muscle contours
-    const wireMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color('#bfdbfe'),
-      wireframe: true,
-      transparent: true,
-      opacity: 0.14,
-      depthWrite: false,
-    });
-
-    return { bodyMaterial: mat, wireframeMaterial: wireMat };
-  }, []);
-
-  // Clone scene and apply the dual-layer medical shader
-  const { solidModel, wireModel } = useMemo(() => {
-    const solid = scene.clone();
-    solid.position.set(0, 0, 0);
-    solid.traverse((child) => {
+    cloned.traverse((child) => {
       if (child.isMesh) {
-        child.position.set(0, 0, 0);
-        child.material = bodyMaterial;
+        child.material = bodyMat;
         child.castShadow = true;
         child.receiveShadow = true;
       }
     });
 
-    const wire = scene.clone();
-    wire.position.set(0, 0, 0);
-    wire.traverse((child) => {
-      if (child.isMesh) {
-        child.position.set(0, 0, 0);
-        child.material = wireframeMaterial;
-      }
-    });
+    return cloned;
+  }, [gltf]);
 
-    return { solidModel: solid, wireModel: wire };
-  }, [scene, bodyMaterial, wireframeMaterial]);
+  if (!model) return null;
 
   // Model height is 1.66m; scale 2.53 grounds the feet at y = -2.35
   return (
     <group position={[0, -2.35, 0]} scale={[2.53, 2.53, 2.53]}>
-      <primitive object={solidModel} />
-      <primitive object={wireModel} scale={[1.002, 1.002, 1.002]} />
+      <primitive object={model} />
+    </group>
+  );
+}
+
+/* ——————————————————————————————————————————————————————————————————————————
+   ELEGANT ANATOMICAL SILHOUETTE (FALLBACK & LOADING STATE)
+   Clean, contoured silhouette that ensures the scene is never blank.
+   —————————————————————————————————————————————————————————————————————————— */
+function FallbackAnatomicalFigure({ gender = 'female' }) {
+  const isMale = gender === 'male';
+  return (
+    <group position={[0, -0.2, 0]}>
+      {/* Head */}
+      <mesh position={[0, 1.55, 0]} scale={[0.85, 1.05, 0.95]}>
+        <sphereGeometry args={[0.32, 32, 32]} />
+        <meshPhysicalMaterial
+          color="#3b82f6"
+          emissive="#1e2d6b"
+          emissiveIntensity={0.3}
+          roughness={0.25}
+          metalness={0.15}
+          transparent
+          opacity={0.7}
+        />
+      </mesh>
+      {/* Neck */}
+      <mesh position={[0, 1.18, 0]}>
+        <cylinderGeometry args={[0.12, 0.15, 0.25, 20]} />
+        <meshPhysicalMaterial color="#3b82f6" transparent opacity={0.65} />
+      </mesh>
+      {/* Torso */}
+      <mesh position={[0, 0.65, 0]} scale={[isMale ? 1.15 : 0.95, 1, 0.85]}>
+        <capsuleGeometry args={[0.38, 0.65, 16, 24]} />
+        <meshPhysicalMaterial color="#3b82f6" transparent opacity={0.7} />
+      </mesh>
+      {/* Pelvis */}
+      <mesh position={[0, -0.15, 0]} scale={[isMale ? 0.9 : 1.1, 0.85, 0.85]}>
+        <capsuleGeometry args={[0.34, 0.35, 16, 24]} />
+        <meshPhysicalMaterial color="#3b82f6" transparent opacity={0.7} />
+      </mesh>
+      {/* Legs */}
+      <mesh position={[-0.2, -1.15, 0]}>
+        <capsuleGeometry args={[0.13, 1.25, 12, 20]} />
+        <meshPhysicalMaterial color="#3b82f6" transparent opacity={0.65} />
+      </mesh>
+      <mesh position={[0.2, -1.15, 0]}>
+        <capsuleGeometry args={[0.13, 1.25, 12, 20]} />
+        <meshPhysicalMaterial color="#3b82f6" transparent opacity={0.65} />
+      </mesh>
     </group>
   );
 }
@@ -107,14 +154,11 @@ function RealisticHumanModel({ gender = 'female' }) {
    - Lungs & Bronchial Tree: Trachea, primary bronchi bifurcation, secondary
      branching arborization, 3-lobed right lung, 2-lobed left lung with cardiac notch.
    —————————————————————————————————————————————————————————————————————————— */
-function DetailedInternalOrgans({ activeCondition, onHotspotClick, isExplore }) {
+function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
   const heartGroupRef = useRef();
   const lungsGroupRef = useRef();
   const brainGroupRef = useRef();
   const synapsePointsRef = useRef();
-
-  // Internal organs only mount in explore mode
-  if (!isExplore) return null;
 
   const isBrain = ['neurological', 'post-stroke', 'depression', 'parkinsons'].includes(activeCondition);
   const isHeart = activeCondition === 'cardiovascular';
@@ -636,17 +680,15 @@ function HumanBodyScene({ activeCondition, onHotspotClick, gender, isExplore }) 
 
       <Float speed={1.1} rotationIntensity={0.05} floatIntensity={0.20}>
         <group ref={groupRef} position={[0, 0, 0]}>
-          {/* Authentic realistic 3D mesh model with dual-layer shader */}
-          <Suspense fallback={null}>
-            <RealisticHumanModel gender={gender} />
-          </Suspense>
+          {/* Authentic realistic 3D mesh model with ErrorBoundary & fallback */}
+          <ModelErrorBoundary fallback={<FallbackAnatomicalFigure gender={gender} />}>
+            <Suspense fallback={<FallbackAnatomicalFigure gender={gender} />}>
+              <RealisticHumanModel gender={gender} />
+            </Suspense>
+          </ModelErrorBoundary>
 
-          {/* Internal Organs (Brain, Heart, Lungs) - visible when exploring */}
-          <DetailedInternalOrgans
-            activeCondition={activeCondition}
-            onHotspotClick={onHotspotClick}
-            isExplore={isExplore}
-          />
+          {/* Internal Organs (Brain, Heart, Lungs) */}
+          <DetailedInternalOrgans activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
 
           {/* Interactive Hotspot Targets */}
           <InteractiveHotspots
