@@ -725,7 +725,7 @@ function HumanBodyScene({ activeCondition, onHotspotClick, gender, isExplore }) 
         <group ref={groupRef} position={[0, 0, 0]}>
           {/* Authentic realistic 3D mesh model with ErrorBoundary & fallback */}
           <ModelErrorBoundary fallback={<FallbackAnatomicalFigure gender={gender} />}>
-            <Suspense fallback={<FallbackAnatomicalFigure gender={gender} />}>
+            <Suspense fallback={null}>
               <RealisticHumanModel gender={gender} />
             </Suspense>
           </ModelErrorBoundary>
