@@ -3,30 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import uvicorn
 import time
-
-# --- STARTUP DIAGNOSTICS ---
-print("="*40)
-print("SWAASCARE BACKEND - CONNECTIVITY LOCKDOWN")
-print(f"DEBUG - NUMBA_DISABLE_JIT: {os.environ.get('NUMBA_DISABLE_JIT')}")
-print(f"DEBUG - OMP_NUM_THREADS:   {os.environ.get('OMP_NUM_THREADS')}")
-print(f"DEBUG - Server PID:        {os.getpid()}")
-print("="*40)
+import numpy as np
 
 app = FastAPI(
     title="Voice Biomarker API",
     description="MVP Backend for Voice Health Monitoring System",
     version="1.0.0"
 )
-
-# --- GLOBAL TRAFFIC TRACKER ---
-@app.middleware("http")
-async def track_incoming_traffic(request: Request, call_next):
-    start_time = time.time()
-    print(f"[TRACKER] Incoming: {request.method} {request.url.path}")
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    print(f"[TRACKER] Completed: {request.method} {request.url.path} ({process_time:.2f}s)")
-    return response
 
 # Cross-Origin Resource Sharing (CORS) setup
 cors_origins = os.environ.get("CORS_ORIGINS", "*")
@@ -50,9 +33,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Defer router import to ensure environment is fully loaded
 from routers import analyze
 app.include_router(analyze.router, prefix="/api", tags=["Analysis"])
+
+@app.on_event("startup")
+def startup_prewarm():
+    """Pre-warm ML models at startup so first request has 0 latency."""
+    try:
+        from ml.predictor import generate_insights
+        dummy = np.zeros(50, dtype=np.float32)
+        dummy[40] = 0.04
+        dummy[42] = 0.08
+        dummy[48] = 135.0
+        dummy[49] = 15.0
+        generate_insights(dummy)
+        print("[STARTUP] ML models pre-warmed successfully.")
+    except Exception as e:
+        print(f"[STARTUP] Prewarm notice: {e}")
 
 @app.get("/health")
 def health_check():
