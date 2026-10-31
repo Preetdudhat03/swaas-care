@@ -103,6 +103,9 @@ export default function RecordPage() {
   const drawWaveform = useCallback(() => {
     if (!analyzerRef.current || !canvasRef.current) return;
     const canvas = canvasRef.current;
+    if (canvas.parentElement) {
+      canvas.width = Math.min(600, canvas.parentElement.clientWidth - 40);
+    }
     const ctx = canvas.getContext('2d');
     const bufferLength = analyzerRef.current.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
