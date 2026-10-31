@@ -282,7 +282,11 @@ export default function RecordPage() {
       setState('results');
     } catch (err) {
       console.error('[DEBUG] Supabase/AI Error:', err);
-      alert('Error: ' + err.message);
+      const isFetchErr = err.message.includes('fetch') || err.message.includes('Failed');
+      const errorMsg = isFetchErr 
+        ? 'Could not connect to the AI analysis engine. The backend might still be warming up or restarting. Please try again in a few moments.'
+        : `Analysis failed: ${err.message}`;
+      alert(errorMsg);
       setState('idle');
     }
   };
