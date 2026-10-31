@@ -107,11 +107,14 @@ function RealisticHumanModel({ gender = 'female' }) {
    - Lungs & Bronchial Tree: Trachea, primary bronchi bifurcation, secondary
      branching arborization, 3-lobed right lung, 2-lobed left lung with cardiac notch.
    —————————————————————————————————————————————————————————————————————————— */
-function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
+function DetailedInternalOrgans({ activeCondition, onHotspotClick, isExplore }) {
   const heartGroupRef = useRef();
   const lungsGroupRef = useRef();
   const brainGroupRef = useRef();
   const synapsePointsRef = useRef();
+
+  // Internal organs only mount in explore mode
+  if (!isExplore) return null;
 
   const isBrain = ['neurological', 'post-stroke', 'depression', 'parkinsons'].includes(activeCondition);
   const isHeart = activeCondition === 'cardiovascular';
