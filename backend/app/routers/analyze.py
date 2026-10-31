@@ -58,7 +58,7 @@ def analyze_voice(
             "system_insights": analysis_result.get("system_insights"),
             "health_score": analysis_result.get("health_score"),
             "risk_level": analysis_result.get("risk_level"),
-            "predictions": analysis_result.get("predictions"),
+            "predictions": analysis_result.get("system_insights", {}).get("predictions"),
             "processing_time_sec": round(total_time, 3)
         }
         
