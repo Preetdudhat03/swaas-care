@@ -63,55 +63,36 @@ function cleanBodyGeometry(mesh) {
   const index = geom.index;
   if (!index) return geom;
   const pos = geom.attributes.position;
-  const nVerts = pos.count;
 
-  // Build vertex adjacency graph to segment disconnected sub-components
-  const adj = Array.from({ length: nVerts }, () => []);
-  for (let i = 0; i < index.count; i += 3) {
-    const a = index.getX(i);
-    const b = index.getX(i + 1);
-    const c = index.getX(i + 2);
-    adj[a].push(b, c);
-    adj[b].push(a, c);
-    adj[c].push(a, b);
-  }
+  // Spatial identifier for internal cavities (oral cavity lining, mouth pouch, teeth, ocular spheres)
+  const isInternalCavity = (i) => {
+    const x = pos.getX(i) * 2.53;
+    const y = pos.getY(i) * 2.53 - 2.35;
+    const z = pos.getZ(i) * 2.53;
 
-  const visited = new Uint8Array(nVerts);
-  const components = [];
-  for (let i = 0; i < nVerts; i++) {
-    if (!visited[i]) {
-      const comp = [];
-      const queue = [i];
-      visited[i] = 1;
-      while (queue.length > 0) {
-        const curr = queue.pop();
-        comp.push(curr);
-        for (const neighbor of adj[curr]) {
-          if (!visited[neighbor]) {
-            visited[neighbor] = 1;
-            queue.push(neighbor);
-          }
-        }
-      }
-      components.push(comp);
+    // 1. Internal oral cavity / mouth pouch / teeth / throat behind the lips
+    if (y >= 1.24 && y <= 1.55 && Math.abs(x) < 0.12 && z < 0.365) {
+      return true;
     }
-  }
-
-  // Exclude internal mouth/teeth/gums (4, 5, 25, 26), eyeballs (3, 24), and ear tubes (9, 29)
-  const excludeComps = [3, 4, 5, 9, 24, 25, 26, 29];
-  const excludedVerts = new Set();
-  excludeComps.forEach((idx) => {
-    if (components[idx]) {
-      components[idx].forEach((v) => excludedVerts.add(v));
+    // 2. Internal eyeball spheres
+    if (y >= 1.48 && y <= 1.62 && Math.abs(x) >= 0.04 && Math.abs(x) <= 0.13 && z >= 0.24 && z <= 0.34) {
+      return true;
     }
-  });
+    // 3. Internal ear canal tubes
+    if (y >= 1.38 && y <= 1.55 && Math.abs(x) >= 0.15 && z >= 0.05 && z <= 0.16) {
+      return true;
+    }
+    return false;
+  };
 
   const newIndices = [];
   for (let i = 0; i < index.count; i += 3) {
     const a = index.getX(i);
     const b = index.getX(i + 1);
     const c = index.getX(i + 2);
-    if (!excludedVerts.has(a) && !excludedVerts.has(b) && !excludedVerts.has(c)) {
+
+    // Omit any triangle touching the internal mouth pouch or cavities
+    if (!isInternalCavity(a) && !isInternalCavity(b) && !isInternalCavity(c)) {
       newIndices.push(a, b, c);
     }
   }
