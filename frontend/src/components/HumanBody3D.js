@@ -641,8 +641,12 @@ function HumanBodyScene({ activeCondition, onHotspotClick, gender, isExplore }) 
             <RealisticHumanModel gender={gender} />
           </Suspense>
 
-          {/* Internal Organs (Brain, Heart, Lungs) */}
-          <DetailedInternalOrgans activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
+          {/* Internal Organs (Brain, Heart, Lungs) - visible when exploring */}
+          <DetailedInternalOrgans
+            activeCondition={activeCondition}
+            onHotspotClick={onHotspotClick}
+            isExplore={isExplore}
+          />
 
           {/* Interactive Hotspot Targets */}
           <InteractiveHotspots
