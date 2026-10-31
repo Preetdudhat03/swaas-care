@@ -618,8 +618,8 @@ function CameraRig({ activeCondition, isExplore }) {
   const CONDITION_VIEWS = {
     hero: { target: [0, -0.2, 0], pos: [0, -0.2, 7.8] },
     explore: { target: [-0.35, -0.2, 0], pos: [-0.35, -0.2, 7.2] },
-    asthma: { target: [0, 0.51, 0.1], pos: [-0.15, 0.51, 2.0] },
-    cardiovascular: { target: [-0.02, 0.49, 0.1], pos: [-0.02, 0.49, 1.9] },
+    asthma: { target: [0.12, 0.52, 0.1], pos: [-0.10, 0.52, 2.0] },
+    cardiovascular: { target: [-0.035, 0.50, 0.1], pos: [-0.035, 0.50, 1.9] },
     neurological: { target: [0, 1.63, 0.1], pos: [0, 1.63, 1.5] },
     'post-stroke': { target: [0.08, 1.60, 0.1], pos: [0.08, 1.60, 1.5] },
     parkinsons: { target: [-0.08, 1.60, 0.1], pos: [-0.08, 1.60, 1.5] },
