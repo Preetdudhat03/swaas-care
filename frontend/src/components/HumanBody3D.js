@@ -69,8 +69,8 @@ function RealisticHumanModel({ gender = 'female' }) {
       clearcoat: 1.0,
       clearcoatRoughness: 0.08,
       transparent: true,
-      opacity: 0.65, // Calibrated so authentic internal organs are clearly visible
-      depthWrite: false, // Prevents depth occlusion of inner organs
+      opacity: 0.72,
+      depthWrite: true, // Front surface writes to depth to cleanly occlude internal mouth/head cavities
       depthTest: true,
       side: THREE.FrontSide,
     });
@@ -78,7 +78,7 @@ function RealisticHumanModel({ gender = 'female' }) {
     cloned.traverse((child) => {
       if (child.isMesh) {
         child.material = bodyMat;
-        child.renderOrder = 2; // Renders translucent outer shell after internal organs
+        child.renderOrder = 10; // Renders translucent outer shell over internal organs
         child.castShadow = true;
         child.receiveShadow = true;
       }
