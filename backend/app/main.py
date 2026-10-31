@@ -30,11 +30,21 @@ async def track_incoming_traffic(request: Request, call_next):
 
 # Cross-Origin Resource Sharing (CORS) setup
 cors_origins = os.environ.get("CORS_ORIGINS", "*")
-allow_origins = ["*"] if cors_origins == "*" else [o.strip() for o in cors_origins.split(",") if o.strip()]
+if cors_origins == "*":
+    allow_origins = [
+        "https://swaascare-frontend.onrender.com",
+        "https://swaascare.onrender.com",
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+    ]
+else:
+    allow_origins = [o.strip() for o in cors_origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
+    allow_origin_regex=r"https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
