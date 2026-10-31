@@ -451,8 +451,8 @@ function RealisticLungs({ activeCondition, onHotspotClick, gender = 'female' }) 
 
   const isLungs = activeCondition === 'asthma';
   const isMale = gender === 'male';
-  const lungsPos = isMale ? [0, 0.605, 0.05] : [0, 0.525, 0.05];
-  const baseScale = isMale ? 0.142 : 0.13;
+  const lungsPos = isMale ? [0, 0.835, 0.03] : [0, 0.775, 0.03];
+  const baseScale = isMale ? 0.118 : 0.108;
 
   const lungsModel = useMemo(() => {
     if (!gltf || !gltf.scene) return null;
