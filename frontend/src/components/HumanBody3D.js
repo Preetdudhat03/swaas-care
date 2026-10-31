@@ -549,24 +549,24 @@ function RealisticLungs({ activeCondition, onHotspotClick, gender = 'female' }) 
    AUTHENTIC INTERNAL ORGANS CONTAINER
    Encapsulates Brain, Heart, and Lungs with error boundaries and suspense.
    —————————————————————————————————————————————————————————————————————————— */
-function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
+function DetailedInternalOrgans({ activeCondition, onHotspotClick, gender = 'female' }) {
   return (
     <group>
       <ModelErrorBoundary fallback={null}>
         <Suspense fallback={null}>
-          <RealisticBrain activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
+          <RealisticBrain activeCondition={activeCondition} onHotspotClick={onHotspotClick} gender={gender} />
         </Suspense>
       </ModelErrorBoundary>
 
       <ModelErrorBoundary fallback={null}>
         <Suspense fallback={null}>
-          <RealisticLungs activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
+          <RealisticLungs activeCondition={activeCondition} onHotspotClick={onHotspotClick} gender={gender} />
         </Suspense>
       </ModelErrorBoundary>
 
       <ModelErrorBoundary fallback={null}>
         <Suspense fallback={null}>
-          <RealisticHeart activeCondition={activeCondition} onHotspotClick={onHotspotClick} />
+          <RealisticHeart activeCondition={activeCondition} onHotspotClick={onHotspotClick} gender={gender} />
         </Suspense>
       </ModelErrorBoundary>
     </group>
@@ -577,13 +577,14 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick }) {
    INTERACTIVE 3D HOTSPOT PINS
    Pulsing holographic targets hovering near key organs in explore mode.
    —————————————————————————————————————————————————————————————————————————— */
-function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore }) {
+function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore, gender = 'female' }) {
   if (!isExplore) return null;
+  const isMale = gender === 'male';
 
   const hotspots = [
-    { id: 'neurological', pos: [0, 1.63, 0.32] },
-    { id: 'cardiovascular', pos: [-0.035, 0.50, 0.24] },
-    { id: 'asthma', pos: [0.16, 0.52, 0.24] },
+    { id: 'neurological', pos: isMale ? [0, 1.74, 0.32] : [0, 1.63, 0.32] },
+    { id: 'cardiovascular', pos: isMale ? [-0.035, 0.58, 0.24] : [-0.035, 0.50, 0.24] },
+    { id: 'asthma', pos: isMale ? [0.18, 0.60, 0.24] : [0.16, 0.52, 0.24] },
   ];
 
   return (
