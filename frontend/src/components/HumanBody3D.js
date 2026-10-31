@@ -52,6 +52,74 @@ class ModelErrorBoundary extends React.Component {
    high-visibility medical bioluminescent physical shader so it stands out
    crisply and beautifully against the light background.
    —————————————————————————————————————————————————————————————————————————— */
+/* ——————————————————————————————————————————————————————————————————————————
+   CLEAN HUMAN BODY GEOMETRY FILTER
+   Strips internal non-skin sub-meshes (teeth/gums oral cavity components,
+   internal eyeballs, and ear tubes) from the continuous body mesh, leaving a
+   flawless, sleek medical humanoid skin shell without mouth artifacts.
+   —————————————————————————————————————————————————————————————————————————— */
+function cleanBodyGeometry(mesh) {
+  const geom = mesh.geometry.clone();
+  const index = geom.index;
+  if (!index) return geom;
+  const pos = geom.attributes.position;
+  const nVerts = pos.count;
+
+  // Build vertex adjacency graph to segment disconnected sub-components
+  const adj = Array.from({ length: nVerts }, () => []);
+  for (let i = 0; i < index.count; i += 3) {
+    const a = index.getX(i);
+    const b = index.getX(i + 1);
+    const c = index.getX(i + 2);
+    adj[a].push(b, c);
+    adj[b].push(a, c);
+    adj[c].push(a, b);
+  }
+
+  const visited = new Uint8Array(nVerts);
+  const components = [];
+  for (let i = 0; i < nVerts; i++) {
+    if (!visited[i]) {
+      const comp = [];
+      const queue = [i];
+      visited[i] = 1;
+      while (queue.length > 0) {
+        const curr = queue.pop();
+        comp.push(curr);
+        for (const neighbor of adj[curr]) {
+          if (!visited[neighbor]) {
+            visited[neighbor] = 1;
+            queue.push(neighbor);
+          }
+        }
+      }
+      components.push(comp);
+    }
+  }
+
+  // Exclude internal mouth/teeth/gums (4, 5, 25, 26), eyeballs (3, 24), and ear tubes (9, 29)
+  const excludeComps = [3, 4, 5, 9, 24, 25, 26, 29];
+  const excludedVerts = new Set();
+  excludeComps.forEach((idx) => {
+    if (components[idx]) {
+      components[idx].forEach((v) => excludedVerts.add(v));
+    }
+  });
+
+  const newIndices = [];
+  for (let i = 0; i < index.count; i += 3) {
+    const a = index.getX(i);
+    const b = index.getX(i + 1);
+    const c = index.getX(i + 2);
+    if (!excludedVerts.has(a) && !excludedVerts.has(b) && !excludedVerts.has(c)) {
+      newIndices.push(a, b, c);
+    }
+  }
+
+  geom.setIndex(newIndices);
+  return geom;
+}
+
 function RealisticHumanModel({ gender = 'female' }) {
   const modelUrl = gender === 'male' ? '/models/body-male.glb' : '/models/body-female.glb';
   const gltf = useGLTF(modelUrl);
@@ -70,13 +138,14 @@ function RealisticHumanModel({ gender = 'female' }) {
       clearcoatRoughness: 0.08,
       transparent: true,
       opacity: 0.72,
-      depthWrite: true, // Front surface writes to depth to cleanly occlude internal mouth/head cavities
+      depthWrite: true,
       depthTest: true,
       side: THREE.FrontSide,
     });
 
     cloned.traverse((child) => {
       if (child.isMesh) {
+        child.geometry = cleanBodyGeometry(child);
         child.material = bodyMat;
         child.renderOrder = 10; // Renders translucent outer shell over internal organs
         child.castShadow = true;
