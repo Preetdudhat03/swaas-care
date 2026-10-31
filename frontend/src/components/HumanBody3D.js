@@ -63,14 +63,14 @@ function RealisticHumanModel({ gender = 'female' }) {
     const bodyMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color('#3b82f6'), // High-visibility royal medical blue
       emissive: new THREE.Color('#1e2d6b'), // Deep internal glow
-      emissiveIntensity: 0.45,
+      emissiveIntensity: 0.35,
       roughness: 0.22,
-      metalness: 0.16,
+      metalness: 0.14,
       clearcoat: 1.0,
       clearcoatRoughness: 0.08,
       transparent: true,
-      opacity: 0.85,
-      depthWrite: true,
+      opacity: 0.65, // Calibrated so authentic internal organs are clearly visible
+      depthWrite: false, // Prevents depth occlusion of inner organs
       depthTest: true,
       side: THREE.FrontSide,
     });
@@ -78,6 +78,7 @@ function RealisticHumanModel({ gender = 'female' }) {
     cloned.traverse((child) => {
       if (child.isMesh) {
         child.material = bodyMat;
+        child.renderOrder = 2; // Renders translucent outer shell after internal organs
         child.castShadow = true;
         child.receiveShadow = true;
       }
