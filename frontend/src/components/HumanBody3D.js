@@ -525,8 +525,8 @@ function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore }) {
 
   const hotspots = [
     { id: 'neurological', pos: [0, 1.63, 0.32] },
-    { id: 'cardiovascular', pos: [-0.02, 0.49, 0.20] },
-    { id: 'asthma', pos: [0.12, 0.51, 0.20] },
+    { id: 'cardiovascular', pos: [-0.035, 0.50, 0.24] },
+    { id: 'asthma', pos: [0.16, 0.52, 0.24] },
   ];
 
   return (
