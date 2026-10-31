@@ -709,6 +709,11 @@ function CameraRig({ activeCondition, isExplore, gender = 'female' }) {
     let basePosY = view.pos[1];
     let basePosZ = view.pos[2];
 
+    const isMale = gender === 'male';
+    const yOffset = isMale ? (viewKey === 'hero' || viewKey === 'explore' ? 0 : 0.08) : 0;
+    baseTargetY += yOffset;
+    basePosY += yOffset;
+
     if (isMobile) {
       if (viewKey === 'hero') {
         if (aspect < 0.65) {
