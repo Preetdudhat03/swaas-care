@@ -80,7 +80,7 @@ export default function RecordPage() {
     // Diagnostic Health Check (Cache Buster & Connectivity Verifier)
     const checkBackend = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/health`, { cache: 'no-store' });
+        const res = await fetch(`${getApiBaseUrl()}/health`, { cache: 'no-store' });
         if (res.ok) setBackendStatus('online');
         else setBackendStatus('offline');
       } catch (e) {
