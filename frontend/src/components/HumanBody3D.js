@@ -202,12 +202,15 @@ function FallbackAnatomicalFigure({ gender = 'female' }) {
    (cerebral cortex, gyri/sulci, cerebellum, brainstem, hippocampus, ventricles)
    fitted snugly inside the cranium with reactive synaptic neural firing.
    —————————————————————————————————————————————————————————————————————————— */
-function RealisticBrain({ activeCondition, onHotspotClick }) {
+function RealisticBrain({ activeCondition, onHotspotClick, gender = 'female' }) {
   const gltf = useGLTF('/models/brain.glb');
   const matRef = useRef();
   const synapsePointsRef = useRef();
 
   const isBrain = ['neurological', 'post-stroke', 'depression', 'parkinsons'].includes(activeCondition);
+  const isMale = gender === 'male';
+  const brainPos = isMale ? [0, 1.735, 0.075] : [0, 1.625, 0.075];
+  const brainScale = isMale ? [0.106, 0.106, 0.106] : [0.10, 0.10, 0.10];
 
   // Synaptic sparks around the cerebral cortex
   const { synapsePositions } = useMemo(() => {
@@ -296,8 +299,8 @@ function RealisticBrain({ activeCondition, onHotspotClick }) {
 
   return (
     <group
-      position={[0, 1.625, 0.075]}
-      scale={[0.10, 0.10, 0.10]}
+      position={brainPos}
+      scale={brainScale}
       onClick={(e) => {
         e.stopPropagation();
         onHotspotClick?.('neurological');
