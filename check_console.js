@@ -23,7 +23,7 @@ setTimeout(async () => {
     console.log('Found page:', page ? page.url : 'none');
 
     if (page && page.webSocketDebuggerUrl) {
-      const WebSocket = require('ws');
+      const WebSocket = require('./frontend/node_modules/ws');
       const ws = new WebSocket(page.webSocketDebuggerUrl);
 
       ws.on('open', () => {
