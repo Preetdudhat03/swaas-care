@@ -67,8 +67,10 @@ function RealisticHumanModel({ gender = 'female' }) {
   // Clone scene and apply the dual-layer medical shader
   const { solidModel, wireModel } = useMemo(() => {
     const solid = scene.clone();
+    solid.position.set(0, 0, 0);
     solid.traverse((child) => {
       if (child.isMesh) {
+        child.position.set(0, 0, 0);
         child.material = bodyMaterial;
         child.castShadow = true;
         child.receiveShadow = true;
@@ -76,8 +78,10 @@ function RealisticHumanModel({ gender = 'female' }) {
     });
 
     const wire = scene.clone();
+    wire.position.set(0, 0, 0);
     wire.traverse((child) => {
       if (child.isMesh) {
+        child.position.set(0, 0, 0);
         child.material = wireframeMaterial;
       }
     });
