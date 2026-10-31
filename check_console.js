@@ -38,13 +38,16 @@ setTimeout(async () => {
           console.error('\n>>> EXCEPTION THROWN:', JSON.stringify(parsed.params.exceptionDetails, null, 2));
         } else if (parsed.method === 'Runtime.consoleAPICalled') {
           console.log('[CONSOLE]', parsed.params.type, parsed.params.args.map(a => a.value || a.description).join(' '));
+        } else if (parsed.method === 'Log.entryAdded') {
+          console.log('[LOG ENTRY]', parsed.params.entry);
         }
       });
 
       setTimeout(() => {
+        console.log('Closing test...');
         chromeProc.kill();
         process.exit(0);
-      }, 7000);
+      }, 10000);
     }
   } catch (err) {
     console.error('Error connecting to devtools:', err.message);
