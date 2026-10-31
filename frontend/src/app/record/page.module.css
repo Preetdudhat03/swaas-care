@@ -407,17 +407,130 @@
   margin-top: 12px;
 }
 
+/* Disease Prediction Cards */
+.diseaseSection {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.diseaseTitle {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.diseaseGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.diseaseCard {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.diseaseIcon {
+  font-size: 1.6rem;
+}
+
+.diseaseLabel {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+.diseaseBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  display: inline-block;
+}
+
+.diseaseGood {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+.diseaseWarning {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.diseaseConfidence {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.disclaimerText {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  text-align: center;
+  font-style: italic;
+  line-height: 1.4;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
+  .page {
+    padding-top: 76px;
+    padding-bottom: 40px;
+  }
+
   .content {
     padding: 0 16px;
   }
 
+  .header {
+    margin-bottom: 32px;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 0.88rem;
+  }
+
   .idleTips {
     flex-direction: column;
+    width: 100%;
+  }
+
+  .waveformContainer {
+    padding: 14px;
+    border-radius: var(--radius-lg);
+  }
+
+  .waveformCanvas {
+    height: 90px;
+  }
+
+  .timerWrapper {
+    width: 150px;
+    height: 150px;
+  }
+
+  .timerNum {
+    font-size: 2.4rem;
   }
 
   .resultsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .diseaseGrid {
     grid-template-columns: 1fr;
   }
 
@@ -428,5 +541,22 @@
 
   .resultsActions button {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .recordBtnWrapper {
+    width: 130px;
+    height: 130px;
+  }
+
+  .recordBtn {
+    width: 80px;
+    height: 80px;
+  }
+
+  .recordBtn svg {
+    width: 32px;
+    height: 32px;
   }
 }
