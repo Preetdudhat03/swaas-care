@@ -1,4 +1,4 @@
-﻿import time
+import time
 import httpx
 from fastapi import APIRouter, File, UploadFile, HTTPException, Body, Form
 from typing import Dict, Any, Optional
