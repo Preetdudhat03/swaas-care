@@ -1,22 +1,22 @@
-﻿{
-  "name": "swaascare",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
-  },
-  "dependencies": {
-    "@react-three/drei": "^9.122.0",
-    "@react-three/fiber": "^8.18.0",
-    "@supabase/supabase-js": "^2.103.0",
-    "axios": "^1.15.0",
-    "framer-motion": "^11.18.2",
-    "lucide-react": "^1.8.0",
-    "next": "^14.2.15",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "three": "^0.170.0"
-  }
-}
+{
+  "name": "swaascare",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
+    "@supabase/supabase-js": "^2.103.0",
+    "axios": "^1.15.0",
+    "framer-motion": "^11.18.2",
+    "lucide-react": "^1.8.0",
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.170.0"
+  }
+}

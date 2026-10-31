@@ -18,7 +18,7 @@ services:
     name: swaascare-frontend
     runtime: node
     rootDir: frontend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --legacy-peer-deps && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_VERSION
