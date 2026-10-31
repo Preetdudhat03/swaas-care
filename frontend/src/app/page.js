@@ -366,6 +366,13 @@ export default function HomePage() {
                   transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
                   key={activeCondition}
                 >
+                  <button 
+                    className={styles.detailCloseBtn} 
+                    onClick={() => setActiveCondition(null)}
+                    aria-label="Close condition details"
+                  >
+                    ✕
+                  </button>
                   <span className={styles.detailIcon}>{CONDITIONS[activeCondition].icon}</span>
                   <h3 className={styles.detailTitle}>{CONDITIONS[activeCondition].label}</h3>
                   <p className={styles.detailDesc}>{CONDITIONS[activeCondition].desc}</p>
