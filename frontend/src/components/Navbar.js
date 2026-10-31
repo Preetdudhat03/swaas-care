@@ -66,12 +66,22 @@ export default function Navbar() {
           className={styles.burger}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle navigation"
+          aria-expanded={mobileOpen}
         >
           <span className={`${styles.burgerLine} ${mobileOpen ? styles.burgerOpen : ''}`} />
           <span className={`${styles.burgerLine} ${mobileOpen ? styles.burgerOpen : ''}`} />
           <span className={`${styles.burgerLine} ${mobileOpen ? styles.burgerOpen : ''}`} />
         </button>
       </div>
+
+      {/* Backdrop overlay for mobile drawer */}
+      {mobileOpen && (
+        <div
+          className={styles.backdrop}
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
     </nav>
   );
 }
