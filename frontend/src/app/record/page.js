@@ -250,7 +250,7 @@ export default function RecordPage() {
       const formData = new FormData();
       formData.append('audio_file', blob, fileName);
 
-      const response = await fetch(`${API_BASE_URL}/api/analyze`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/analyze`, {
         method: 'POST',
         body: formData
       });
