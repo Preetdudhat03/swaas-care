@@ -71,7 +71,7 @@ function cleanBodyGeometry(mesh) {
     const z = pos.getZ(i) * 2.53;
 
     // 1. Internal oral cavity / mouth pouch / teeth / throat behind the lips
-    if (y >= 1.24 && y <= 1.55 && Math.abs(x) < 0.12 && z < 0.365) {
+    if (y >= 1.22 && y <= 1.55 && Math.abs(x) < 0.14 && z < 0.365) {
       return true;
     }
     // 2. Internal eyeball spheres
