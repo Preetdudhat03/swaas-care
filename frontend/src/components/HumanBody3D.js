@@ -63,27 +63,64 @@ function cleanBodyGeometry(mesh) {
   const index = geom.index;
   if (!index) return geom;
   const pos = geom.attributes.position;
+  const numVerts = pos.count;
 
-  // Spatial identifier for internal cavities (oral cavity lining, mouth pouch, teeth, ocular spheres)
-  const isInternalCavity = (i) => {
-    const x = pos.getX(i) * 2.53;
-    const y = pos.getY(i) * 2.53 - 2.35;
-    const z = pos.getZ(i) * 2.53;
+  // Build adjacency graph to find independent connected components
+  const adj = Array.from({ length: numVerts }, () => []);
+  for (let i = 0; i < index.count; i += 3) {
+    const a = index.getX(i), b = index.getX(i + 1), c = index.getX(i + 2);
+    adj[a].push(b, c);
+    adj[b].push(a, c);
+    adj[c].push(a, b);
+  }
 
-    // 1. Internal oral cavity / mouth pouch / teeth / throat behind the lips
-    if (y >= 1.22 && y <= 1.55 && Math.abs(x) < 0.14 && z < 0.365) {
-      return true;
+  const visited = new Uint8Array(numVerts);
+  const compId = new Int32Array(numVerts).fill(-1);
+  const compMembers = [];
+  let compCount = 0;
+
+  for (let i = 0; i < numVerts; i++) {
+    if (!visited[i]) {
+      const q = [i];
+      visited[i] = 1;
+      compId[i] = compCount;
+      const members = [];
+      while (q.length > 0) {
+        const u = q.pop();
+        members.push(u);
+        for (const v of adj[u]) {
+          if (!visited[v]) {
+            visited[v] = 1;
+            compId[v] = compCount;
+            q.push(v);
+          }
+        }
+      }
+      compMembers.push(members);
+      compCount++;
     }
-    // 2. Internal eyeball spheres
-    if (y >= 1.48 && y <= 1.62 && Math.abs(x) >= 0.04 && Math.abs(x) <= 0.13 && z >= 0.24 && z <= 0.34) {
-      return true;
+  }
+
+  // Identify internal non-skin sub-meshes (eyeballs, ear tubes, mouth pouch/teeth)
+  // These are isolated components completely located in the head region (y in [1.0, 1.85])
+  // with vertex count < 500 (authentic head skin components have 1319 vertices each)
+  const isCavityComp = new Set();
+  for (let c = 0; c < compMembers.length; c++) {
+    const members = compMembers[c];
+    if (members.length < 500) {
+      let inHead = true;
+      for (let j = 0; j < members.length; j++) {
+        const y = pos.getY(members[j]) * 2.53 - 2.35;
+        if (y < 1.0 || y > 1.85) {
+          inHead = false;
+          break;
+        }
+      }
+      if (inHead) {
+        isCavityComp.add(c);
+      }
     }
-    // 3. Internal ear canal tubes
-    if (y >= 1.38 && y <= 1.55 && Math.abs(x) >= 0.15 && z >= 0.05 && z <= 0.16) {
-      return true;
-    }
-    return false;
-  };
+  }
 
   const newIndices = [];
   for (let i = 0; i < index.count; i += 3) {
@@ -91,8 +128,8 @@ function cleanBodyGeometry(mesh) {
     const b = index.getX(i + 1);
     const c = index.getX(i + 2);
 
-    // Omit any triangle touching the internal mouth pouch or cavities
-    if (!isInternalCavity(a) && !isInternalCavity(b) && !isInternalCavity(c)) {
+    // Keep triangles that belong to authentic skin components
+    if (!isCavityComp.has(compId[a]) && !isCavityComp.has(compId[b]) && !isCavityComp.has(compId[c])) {
       newIndices.push(a, b, c);
     }
   }
