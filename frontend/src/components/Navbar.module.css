@@ -135,10 +135,39 @@
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
+/* Backdrop overlay */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.2);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 90;
+  animation: fadeIn 0.2s ease both;
+}
+
+@media (max-width: 1024px) {
+  .inner {
+    padding: 0 24px;
+  }
+}
+
 @media (max-width: 768px) {
+  .navbar {
+    padding: 12px 0;
+  }
+
+  .scrolled {
+    padding: 8px 0;
+  }
+
+  .inner {
+    padding: 0 16px;
+  }
+
   .links {
     position: fixed;
-    top: 70px;
+    top: calc(64px + env(safe-area-inset-top, 0px));
     left: 16px;
     right: 16px;
     flex-direction: column;
@@ -148,8 +177,14 @@
     pointer-events: none;
     transform: translateY(-10px);
     transition: all var(--transition-base);
-    box-shadow: var(--glass-shadow-lg);
-    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    z-index: 101;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
   }
 
   .linksOpen {
@@ -160,11 +195,29 @@
 
   .burger {
     display: flex;
+    z-index: 102;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
   }
 
   .link {
     width: 100%;
-    justify-content: center;
-    padding: 12px;
+    justify-content: flex-start;
+    padding: 14px 20px;
+    font-size: 0.95rem;
+    border-radius: var(--radius-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .logoText {
+    font-size: 1.2rem;
+  }
+
+  .logoIcon svg {
+    width: 24px;
+    height: 24px;
   }
 }
