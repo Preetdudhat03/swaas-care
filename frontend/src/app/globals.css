@@ -389,12 +389,38 @@ h4 { font-size: clamp(1rem, 2vw, 1.5rem); }
 .stagger-7 { animation-delay: 0.7s; }
 
 /* ---- Responsive ---- */
+@media (max-width: 1024px) {
+  .content-wrapper {
+    padding: 0 var(--space-lg);
+  }
+}
+
 @media (max-width: 768px) {
   .content-wrapper {
     padding: 0 var(--space-md);
   }
 
   .page-container {
-    padding-top: 70px;
+    padding-top: 72px;
+  }
+
+  .pill-button {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-wrapper {
+    padding: 0 var(--space-sm);
+  }
+
+  .page-container {
+    padding-top: 64px;
+  }
+
+  .pill-button {
+    width: 100%;
+    padding: 12px 20px;
   }
 }
