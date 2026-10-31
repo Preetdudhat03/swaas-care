@@ -5,13 +5,17 @@ services:
     runtime: python
     rootDir: backend
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: cd app && uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: cd app && uvicorn main:app --host 0.0.0.0 --port $PORT --timeout-keep-alive 30 --limit-concurrency 10
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: CORS_ORIGINS
         value: "*"
+      - key: NUMBA_DISABLE_JIT
+        value: "1"
+      - key: MALLOC_ARENA_MAX
+        value: "2"
 
   # 2. Next.js Frontend
   - type: web
