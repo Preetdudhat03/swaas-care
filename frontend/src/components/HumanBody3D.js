@@ -584,9 +584,9 @@ function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore, gende
   const isMale = gender === 'male';
 
   const hotspots = [
-    { id: 'neurological', pos: isMale ? [0, 1.74, 0.32] : [0, 1.63, 0.32] },
-    { id: 'cardiovascular', pos: isMale ? [-0.035, 0.58, 0.24] : [-0.035, 0.50, 0.24] },
-    { id: 'asthma', pos: isMale ? [0.18, 0.60, 0.24] : [0.16, 0.52, 0.24] },
+    { id: 'neurological', pos: isMale ? [0, 1.745, 0.32] : [0, 1.635, 0.32] },
+    { id: 'cardiovascular', pos: isMale ? [-0.035, 0.79, 0.28] : [-0.035, 0.73, 0.28] },
+    { id: 'asthma', pos: isMale ? [0.18, 0.835, 0.28] : [0.16, 0.775, 0.28] },
   ];
 
   return (
