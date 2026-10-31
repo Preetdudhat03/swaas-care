@@ -24,7 +24,4 @@ services:
       - key: NODE_VERSION
         value: 18.20.0
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          name: swaascare-backend
-          type: web
-          property: host
+        value: https://swaascare-backend.onrender.com
