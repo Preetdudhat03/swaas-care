@@ -209,8 +209,8 @@ function RealisticBrain({ activeCondition, onHotspotClick, gender = 'female' }) 
 
   const isBrain = ['neurological', 'post-stroke', 'depression', 'parkinsons'].includes(activeCondition);
   const isMale = gender === 'male';
-  const brainPos = isMale ? [0, 1.735, 0.075] : [0, 1.625, 0.075];
-  const brainScale = isMale ? [0.106, 0.106, 0.106] : [0.10, 0.10, 0.10];
+  const brainPos = isMale ? [0, 1.745, 0.085] : [0, 1.635, 0.085];
+  const brainScale = isMale ? [0.092, 0.092, 0.092] : [0.086, 0.086, 0.086];
 
   // Synaptic sparks around the cerebral cortex
   const { synapsePositions } = useMemo(() => {
@@ -231,14 +231,16 @@ function RealisticBrain({ activeCondition, onHotspotClick, gender = 'female' }) 
     if (!gltf || !gltf.scene) return null;
     const cloned = gltf.scene.clone(true);
 
-    // Center the brain mesh to local (0,0,0)
+    // Center the brain mesh to local (0,0,0) inside a dedicated pivot
     const box = new THREE.Box3().setFromObject(cloned);
     const center = new THREE.Vector3();
     box.getCenter(center);
     cloned.position.sub(center);
 
     // Rotate so brainstem points down into spine (-Y) and frontal lobe faces forward (+Z)
-    cloned.rotation.x = -Math.PI / 2;
+    const rotGroup = new THREE.Group();
+    rotGroup.add(cloned);
+    rotGroup.rotation.x = -Math.PI / 2;
 
     const mat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color('#f43f5e'), // Luminous anatomical rose
@@ -264,7 +266,7 @@ function RealisticBrain({ activeCondition, onHotspotClick, gender = 'female' }) 
     });
 
     const wrapper = new THREE.Group();
-    wrapper.add(cloned);
+    wrapper.add(rotGroup);
     return wrapper;
   }, [gltf]);
 
