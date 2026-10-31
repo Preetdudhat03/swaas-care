@@ -94,13 +94,13 @@ export default function DashboardPage() {
       } else {
         // Empty state defaults
         setBiomarkers([
-          { id: 'tremor', label: 'Voice Tremor', value: 0, unit: '/100', trend: 'stable', status: 'good', icon: 'πÇ░∩╕Å', desc: 'No data', history: Array(7).fill(0) },
-          { id: 'breath', label: 'Breathlessness', value: 0, unit: '/100', trend: 'stable', status: 'good', icon: '≡ƒÆ¿', desc: '', history: Array(7).fill(0) },
-          { id: 'pitch', label: 'Pitch Variation', value: 0, unit: 'Hz ╧â', trend: 'stable', status: 'good', icon: '≡ƒÄ╡', desc: '', history: Array(7).fill(0) }
+          { id: 'tremor', label: 'Voice Tremor', value: 0, unit: '/100', trend: 'stable', status: 'good', icon: '〰️', desc: 'No data', history: Array(7).fill(0) },
+          { id: 'breath', label: 'Breathlessness', value: 0, unit: '/100', trend: 'stable', status: 'good', icon: '💨', desc: '', history: Array(7).fill(0) },
+          { id: 'pitch', label: 'Pitch Variation', value: 0, unit: 'Hz σ', trend: 'stable', status: 'good', icon: '🎵', desc: '', history: Array(7).fill(0) }
         ]);
         setConditions([
-          { id: 'asthma', label: 'Asthma', icon: '≡ƒ½ü', active: false },
-          { id: 'depression', label: 'Depression', icon: '≡ƒîè', active: false }
+          { id: 'asthma', label: 'Asthma', icon: '🫁', active: false },
+          { id: 'depression', label: 'Depression', icon: '🌧️', active: false }
         ]);
       }
     } catch (err) {
@@ -142,19 +142,19 @@ export default function DashboardPage() {
         id: 'tremor', label: 'Voice Tremor', 
         value: tremorHist[tremorHist.length - 1], unit: '/100', 
         trend: determineTrend(tremorHist), status: latest.system_insights?.neurological?.status || 'good', 
-        icon: 'πÇ░∩╕Å', desc: 'Neuromuscular Proxy', history: pad(tremorHist)
+        icon: '〰️', desc: 'Neuromuscular Proxy', history: pad(tremorHist)
       },
       {
         id: 'breath', label: 'Breathlessness', 
         value: breathHist[breathHist.length - 1], unit: '/100', 
         trend: determineTrend(breathHist), status: latest.system_insights?.respiratory?.status || 'good', 
-        icon: '≡ƒÆ¿', desc: latest.system_insights?.respiratory?.insight || 'Normal breathing', history: pad(breathHist)
+        icon: '💨', desc: latest.system_insights?.respiratory?.insight || 'Normal breathing', history: pad(breathHist)
       },
       {
         id: 'pitch', label: 'Pitch Variation', 
         value: pitchHist[pitchHist.length - 1], unit: '/100', 
         trend: determineTrend(pitchHist), status: 'good', 
-        icon: '≡ƒÄ╡', desc: 'Average pitch elasticity', history: pad(pitchHist)
+        icon: '🎵', desc: 'Average pitch elasticity', history: pad(pitchHist)
       }
     ]);
 
@@ -166,9 +166,9 @@ export default function DashboardPage() {
     const hasParkinsonsWarning = latest.system_insights?.neurological?.status === 'warning' || predictions.parkinsons?.prediction === 'Parkinsons';
 
     setConditions([
-      { id: 'asthma', label: 'Asthma Analysis', icon: '≡ƒ½ü', active: hasAsthmaWarning, severity: predictions.asthma?.severity },
-      { id: 'depression', label: 'Depression Analysis', icon: '≡ƒîè', active: hasDepWarning, severity: predictions.depression?.severity },
-      { id: 'parkinsons', label: 'Parkinson\'s Analysis', icon: '≡ƒºá', active: hasParkinsonsWarning, severity: predictions.parkinsons?.severity }
+      { id: 'asthma', label: 'Asthma Analysis', icon: '🫁', active: hasAsthmaWarning, severity: predictions.asthma?.severity },
+      { id: 'depression', label: 'Depression Analysis', icon: '🌧️', active: hasDepWarning, severity: predictions.depression?.severity },
+      { id: 'parkinsons', label: 'Parkinson\'s Analysis', icon: '🧠', active: hasParkinsonsWarning, severity: predictions.parkinsons?.severity }
     ]);
 
     if (hasAsthmaWarning || hasDepWarning || hasParkinsonsWarning) {
@@ -194,13 +194,13 @@ export default function DashboardPage() {
       if (cur.health_score > prev.health_score + 5) insights.push("Impressive! Your vocal stability improved significantly today.");
       else if (cur.health_score < prev.health_score - 5) insights.push("Vocal baseline is lower than usual. Monitor for fatigue or environmental triggers.");
 
-      if (hasAsthmaWarning) insights.push("ΓÜá∩╕Å Higher friction in vocal onset detected. If you have an inhaler, please monitor your peak flow.");
-      if (hasDepWarning) insights.push("ΓÜá∩╕Å Low vocal energy detected. Consider tracking your sleep and mood patterns alongside these recordings.");
-      if (hasParkinsonsWarning) insights.push("ΓÜá∩╕Å Micro-tremors in vocal cord control detected. Daily recording is essential to track neurological stability.");
+      if (hasAsthmaWarning) insights.push("⚠️ Higher friction in vocal onset detected. If you have an inhaler, please monitor your peak flow.");
+      if (hasDepWarning) insights.push("⚠️ Low vocal energy detected. Consider tracking your sleep and mood patterns alongside these recordings.");
+      if (hasParkinsonsWarning) insights.push("⚠️ Micro-tremors in vocal cord control detected. Daily recording is essential to track neurological stability.");
       
       // Correlation logic
       if (hasAsthmaWarning && cur.extracted_features?.breathiness > 60) {
-        insights.push("≡ƒÆí Breathiness is correlating with respiratory friction. This is a strong indicator of reduced lung airflow.");
+        insights.push("💡 Breathiness is correlating with respiratory friction. This is a strong indicator of reduced lung airflow.");
       }
 
       setAiFeedback({
@@ -216,9 +216,9 @@ export default function DashboardPage() {
   };
 
   const trendIcon = (trend) => {
-    if (trend === 'up') return 'Γåæ';
-    if (trend === 'down') return 'Γåô';
-    return 'ΓåÆ';
+    if (trend === 'up') return '↑';
+    if (trend === 'down') return '↓';
+    return '→';
   };
 
   const statusColor = (status) => {
@@ -241,12 +241,12 @@ export default function DashboardPage() {
             transition={{ duration: 0.5 }}
           >
             <div className={styles.greeting}>
-              <h1 className={styles.greetTitle}>Good Afternoon ≡ƒæï</h1>
+              <h1 className={styles.greetTitle}>Good Afternoon 👋</h1>
               <p className={styles.greetDate}>{today}</p>
             </div>
             <div className={styles.headerRight}>
               <div className={styles.streakBadge}>
-                <span className={styles.streakFire}>≡ƒöÑ</span>
+                <span className={styles.streakFire}>🔥</span>
                 <span className={styles.streakNum}>{streak}</span>
                 <span className={styles.streakLabel}>Day Streak</span>
               </div>
@@ -256,7 +256,7 @@ export default function DashboardPage() {
           {/* Zero Data Banner */}
           {!loading && logs.length === 0 && (
             <div className={`${styles.alertBanner} glass-panel`} style={{ marginBottom: '2rem', borderColor: '#4A6CF7', backgroundColor: 'rgba(74, 108, 247, 0.1)' }}>
-              <span className={styles.alertIcon}>≡ƒæï</span>
+              <span className={styles.alertIcon}>👋</span>
               <div className={styles.alertText}>
                 <strong>Welcome to SwaasCare</strong>
                 <p>You have no voice records yet. Click 'Record Voice Diary' on the right to start tracking your health.</p>
@@ -267,7 +267,7 @@ export default function DashboardPage() {
           {/* Smart AI Feedback Engine Banner */}
           {!loading && aiFeedback && (
             <div className={`${styles.alertBanner} ${styles.feedbackEngine} glass-panel`} style={{ marginBottom: '2rem' }}>
-              <span className={`${styles.alertIcon} ${styles.feedbackIcon}`}>≡ƒñû</span>
+              <span className={`${styles.alertIcon} ${styles.feedbackIcon}`}>🤖</span>
               <div className={`${styles.alertText} ${styles.feedbackInsights}`}>
                 <strong>{aiFeedback.title}</strong>
                 <ul>
@@ -322,7 +322,7 @@ export default function DashboardPage() {
                 <p className={styles.scoreDesc}>
                   {logs.length === 0 ? "Record your voice to generate your first score" : "Based on your latest voice analysis"}
                 </p>
-                {logs.length > 0 && <span className="badge badge-success">ΓùÅ Normal Range</span>}
+                {logs.length > 0 && <span className="badge badge-success">● Normal Range</span>}
               </div>
             </div>
 
@@ -341,7 +341,7 @@ export default function DashboardPage() {
               </div>
               <h3 className={styles.recordTitle}>Record Voice Diary</h3>
               <p className={styles.recordDesc}>15-second daily voice sample</p>
-              <span className={styles.recordCta}>Start Recording ΓåÆ</span>
+              <span className={styles.recordCta}>Start Recording →</span>
             </Link>
           </div>
 
@@ -440,7 +440,7 @@ export default function DashboardPage() {
                 ))}
               </div>
               <Link href="/conditions" className={styles.conditionsLink}>
-                Manage Conditions ΓåÆ
+                Manage Conditions →
               </Link>
             </div>
           </div>
@@ -448,7 +448,7 @@ export default function DashboardPage() {
           {/* Alert Banner */}
           {alert && (
             <div className={`${styles.alertBanner} glass-panel`}>
-              <span className={styles.alertIcon}>ΓÜá∩╕Å</span>
+              <span className={styles.alertIcon}>⚠️</span>
               <div className={styles.alertText}>
                 <strong>{alert.title}</strong>
                 <p>{alert.msg}</p>
@@ -471,7 +471,7 @@ export default function DashboardPage() {
                 ) : meds.map(m => (
                   <div key={m.id} className={styles.medItem}>
                     <div className={styles.medInfo}>
-                      <span className={styles.medIcon}>≡ƒÆè</span>
+                      <span className={styles.medIcon}>💊</span>
                       <div>
                         <div className={styles.medName}>{m.name} {m.dosage && `(${m.dosage})`}</div>
                         <div className={styles.medTime}>Taken at {m.time}</div>
@@ -490,7 +490,7 @@ export default function DashboardPage() {
                 className={`${styles.sosBtn} ${healthScore > 0 && healthScore <= 60 ? styles.emergencyBtn : ''} ${sosActive ? styles.sosBtnActive : ''}`}
                 onClick={() => setSosActive(true)}
               >
-                {sosActive ? "Γ£à Doctor Notified!" : "≡ƒÜ¿ Alert Doctor / SOS"}
+                {sosActive ? "✅ Doctor Notified!" : "🚨 Alert Doctor / SOS"}
               </button>
               <p className={styles.sosDesc}>
                 {sosActive ? "An emergency SMS has been dispatched to your doctor with your voice biomarkers." : "Directly notify your physician if you feel symptoms worsening."}

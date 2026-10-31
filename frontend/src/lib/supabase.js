@@ -14,9 +14,9 @@ export const supabase = isMockMode
 const MOCK_USER_ID = 'demo-user-123';
 const LOCAL_STORAGE_KEY = 'swaascare_voice_logs';
 
-/* ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+/* ——————————————————————————————————————————
    LocalStorage helpers (mock-mode persistence)
-   ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö */
+   —————————————————————————————————————————— */
 function getLocalLogs() {
   if (typeof window === 'undefined') return [];
   try {
@@ -36,9 +36,9 @@ function saveLocalLogs(logs) {
   }
 }
 
-/* ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+/* ——————————————————————————————————————————
    Auth helper
-   ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö */
+   —————————————————————————————————————————— */
 export async function ensureDemoUser() {
   if (isMockMode) {
     return MOCK_USER_ID;
@@ -62,14 +62,14 @@ export async function ensureDemoUser() {
   }
 }
 
-/* ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+/* ——————————————————————————————————————————
    Data helpers (auto-route to localStorage
    when no real Supabase is configured)
-   ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö */
+   —————————————————————————————————————————— */
 
 /**
  * Fetch voice_logs for the given user.
- * Returns { data, error } ΓÇö always resolves, never throws.
+ * Returns { data, error } — always resolves, never throws.
  */
 export async function fetchVoiceLogs(userId) {
   if (isMockMode) {
@@ -87,7 +87,7 @@ export async function fetchVoiceLogs(userId) {
 
 /**
  * Insert a voice_log row.
- * Returns { error } ΓÇö always resolves, never throws.
+ * Returns { error } — always resolves, never throws.
  */
 export async function insertVoiceLog(row) {
   if (isMockMode) {

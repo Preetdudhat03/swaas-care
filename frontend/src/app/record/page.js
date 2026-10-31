@@ -255,16 +255,16 @@ export default function RecordPage() {
       const predictions = insights.predictions || {};
 
       const mappedResults = {
-        tremor: { value: data.extracted_features?.voice_tremor || 21, status: insights.neurological?.status || 'good', label: 'Voice Tremor', icon: 'πÇ░∩╕Å' },
-        breath: { value: data.extracted_features?.breathiness || 38, status: insights.respiratory?.status || 'warning', label: 'Breathlessness', icon: '≡ƒÆ¿' },
-        pitch: { value: data.extracted_features?.pitch_variation || 68, status: 'good', label: 'Pitch Variation', icon: '≡ƒÄ╡' },
-        tone: { value: data.health_score || 85, status: data.risk_level === 'low' ? 'good' : 'warning', label: 'Health Score', icon: 'Γ£¿' },
+        tremor: { value: data.extracted_features?.voice_tremor || 21, status: insights.neurological?.status || 'good', label: 'Voice Tremor', icon: '〰️' },
+        breath: { value: data.extracted_features?.breathiness || 38, status: insights.respiratory?.status || 'warning', label: 'Breathlessness', icon: '💨' },
+        pitch: { value: data.extracted_features?.pitch_variation || 68, status: 'good', label: 'Pitch Variation', icon: '🎵' },
+        tone: { value: data.health_score || 85, status: data.risk_level === 'low' ? 'good' : 'warning', label: 'Health Score', icon: '✨' },
       };
 
       const diseasePredictions = [
-        { id: 'asthma', label: 'Asthma', icon: '≡ƒ½ü', result: predictions.asthma?.prediction || 'Normal', confidence: Math.round((predictions.asthma?.confidence || 0) * 100), status: predictions.asthma?.prediction === 'Asthma' ? 'warning' : 'good' },
-        { id: 'depression', label: 'Depression', icon: '≡ƒîè', result: predictions.depression?.prediction || 'Normal', confidence: Math.round((predictions.depression?.confidence || 0) * 100), status: predictions.depression?.prediction === 'Depression' ? 'warning' : 'good' },
-        { id: 'parkinsons', label: "Parkinson's", icon: '≡ƒºá', result: predictions.parkinsons?.prediction || 'Normal', confidence: Math.round((predictions.parkinsons?.confidence || 0) * 100), status: predictions.parkinsons?.prediction === 'Parkinsons' ? 'warning' : 'good' }
+        { id: 'asthma', label: 'Asthma', icon: '🫁', result: predictions.asthma?.prediction || 'Normal', confidence: Math.round((predictions.asthma?.confidence || 0) * 100), status: predictions.asthma?.prediction === 'Asthma' ? 'warning' : 'good' },
+        { id: 'depression', label: 'Depression', icon: '🌧️', result: predictions.depression?.prediction || 'Normal', confidence: Math.round((predictions.depression?.confidence || 0) * 100), status: predictions.depression?.prediction === 'Depression' ? 'warning' : 'good' },
+        { id: 'parkinsons', label: "Parkinson's", icon: '🧠', result: predictions.parkinsons?.prediction || 'Normal', confidence: Math.round((predictions.parkinsons?.confidence || 0) * 100), status: predictions.parkinsons?.prediction === 'Parkinsons' ? 'warning' : 'good' }
       ];
 
       setResults({ raw: data, ui: mappedResults, diseases: diseasePredictions, finalAudioUrl: 'none' });
@@ -395,7 +395,7 @@ export default function RecordPage() {
               <div className={styles.processingOrb}>
                 <div className={styles.processingRing1} />
                 <div className={styles.processingRing2} />
-                <span className={styles.processingIcon}>≡ƒºá</span>
+                <span className={styles.processingIcon}>🧠</span>
               </div>
               <h3 className={styles.processingTitle}>Analyzing Voice Biomarkers</h3>
               <p className={styles.processingDesc}>Consulting our Neural Engine...</p>
@@ -405,7 +405,7 @@ export default function RecordPage() {
           {state === 'results' && results && (
             <div className={styles.resultsState}>
               <div className={styles.resultsHeader}>
-                <span className={styles.resultsCheck}>Γ£à</span>
+                <span className={styles.resultsCheck}>✅</span>
                 <h3 className={styles.resultsTitle}>Analysis Complete</h3>
               </div>
               <div className={styles.resultsGrid}>
@@ -417,7 +417,7 @@ export default function RecordPage() {
                       <span className={styles.resultValue}>{bm.value}</span>
                     </div>
                     <span className={`badge ${bm.status === 'good' ? 'badge-success' : 'badge-warning'}`}>
-                      ΓùÅ {bm.status === 'good' ? 'Normal' : 'Elevated'}
+                      ● {bm.status === 'good' ? 'Normal' : 'Elevated'}
                     </span>
                   </div>
                 ))}
@@ -468,7 +468,7 @@ export default function RecordPage() {
           {state === 'saved' && (
             <div className={styles.resultsState}>
               <div className={styles.resultsHeader}>
-                <span className={styles.resultsCheck}>≡ƒô¥</span>
+                <span className={styles.resultsCheck}>📋</span>
                 <h3 className={styles.resultsTitle}>Saved to Health Diary</h3>
                 <p className={styles.resultsDesc}>You can view your trends in the Dashboard.</p>
               </div>

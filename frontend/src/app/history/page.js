@@ -20,7 +20,7 @@ const DIARY_ENTRIES = [
 const TREND_DATA = {
   tremor: { label: 'Voice Tremor', data: [30, 28, 25, 27, 0, 24, 23], color: '#4A6CF7', unit: '/100' },
   breath: { label: 'Breathlessness', data: [35, 33, 36, 38, 0, 40, 41], color: '#fbbf24', unit: '/100' },
-  pitch: { label: 'Pitch Variation', data: [65, 68, 66, 67, 0, 66, 67], color: '#8b5cf6', unit: 'Hz ╧â' },
+  pitch: { label: 'Pitch Variation', data: [65, 68, 66, 67, 0, 66, 67], color: '#8b5cf6', unit: 'Hz σ' },
   speech: { label: 'Speech Rate', data: [140, 143, 141, 142, 0, 141, 142], color: '#22c55e', unit: 'wpm' },
 };
 
@@ -264,7 +264,7 @@ export default function HistoryPage() {
                         <span>Rate: {entry.speech}</span>
                       </div>
                       <span className={`badge ${entry.status === 'good' ? 'badge-success' : 'badge-warning'}`}>
-                        ΓùÅ {entry.status === 'good' ? 'Normal' : 'Elevated'}
+                        ● {entry.status === 'good' ? 'Normal' : 'Elevated'}
                       </span>
                     </>
                   ) : (
