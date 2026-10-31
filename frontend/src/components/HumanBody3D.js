@@ -423,9 +423,9 @@ function RealisticHeart({ activeCondition, onHotspotClick, gender = 'female' }) 
   return (
     <group
       ref={groupRef}
-      position={[-0.035, 0.50, 0.09]}
+      position={heartPos}
       rotation={[0.12, 0.15, -0.25]}
-      scale={[2.05, 2.05, 2.05]}
+      scale={[baseScale, baseScale, baseScale]}
       onClick={(e) => {
         e.stopPropagation();
         onHotspotClick?.('cardiovascular');
