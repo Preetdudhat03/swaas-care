@@ -486,42 +486,354 @@
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .bioGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* Feedback Engine Banner */
+.feedbackEngine {
+  border-left-color: var(--accent-blue);
+  background: rgba(74, 108, 247, 0.08);
 }
 
-@media (max-width: 768px) {
-  .content {
-    padding: 0 16px;
-  }
+.feedbackIcon {
+  font-size: 1.6rem;
+}
 
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+.feedbackInsights ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feedbackInsights li {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Third Row: Med Tracker & SOS */
+.thirdRow {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  animation: fadeInUp 0.5s ease 0.4s both;
+}
+
+/* Medication Tracker */
+.medCard {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.medHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.addMedBtn {
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-blue);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(74, 108, 247, 0.3);
+}
+
+.addMedBtn:hover {
+  background: var(--accent-blue-dark);
+}
+
+.medList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.medEmpty {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  font-style: italic;
+  padding: 12px 0;
+}
+
+.medItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.medInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.medIcon {
+  font-size: 1.2rem;
+}
+
+.medName {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.medTime {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.medStatus {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.15);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+/* SOS Card */
+.sosCard {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.sosPulse {
+  position: absolute;
+  inset: -10px;
+  border-radius: var(--radius-xl);
+  pointer-events: none;
+}
+
+.emergency {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.emergency .sosPulse {
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: inset 0 0 30px rgba(239, 68, 68, 0.15);
+}
+
+.sosBtn {
+  padding: 14px 28px;
+  border-radius: var(--radius-pill);
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.35);
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 280px;
+}
+
+.sosBtn:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(239, 68, 68, 0.45);
+}
+
+.emergencyBtn {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.sosBtnActive {
+  background: #16a34a !important;
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4) !important;
+}
+
+.sosDesc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 12px;
+  max-width: 320px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .content {
+    padding: 0 24px;
+    gap: 20px;
   }
 
   .topRow {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .bioGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
   }
 
   .bottomRow {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .thirdRow {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding-top: 76px;
+    padding-bottom: 40px;
+  }
+
+  .content {
+    padding: 0 16px;
+    gap: 16px;
+  }
+
+  .header {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .greetTitle {
+    font-size: 1.45rem;
+  }
+
+  .greetDate {
+    font-size: 0.82rem;
+  }
+
+  .streakBadge {
+    padding: 8px 14px;
+  }
+
+  .streakNum {
+    font-size: 0.95rem;
+  }
+
+  .streakLabel {
+    font-size: 0.72rem;
+  }
+
+  .scoreCard {
+    flex-direction: row;
+    text-align: left;
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .scoreRing {
+    width: 90px;
+    height: 90px;
+  }
+
+  .scoreNum {
+    font-size: 1.5rem;
+  }
+
+  .scoreTitle {
+    font-size: 1.05rem;
+  }
+
+  .scoreDesc {
+    font-size: 0.8rem;
+  }
+
+  .recordCard {
+    padding: 24px 20px;
+  }
+
+  .recordDot {
+    width: 48px;
+    height: 48px;
+  }
+
+  .weeklyCard {
+    padding: 20px;
+  }
+
+  .weeklyChart {
+    height: 120px;
+    gap: 8px;
+  }
+
+  .conditionsCard {
+    padding: 20px;
+  }
+
+  .medCard {
+    padding: 20px;
+  }
+
+  .sosCard {
+    padding: 24px 20px;
+  }
+
+  .alertBanner {
+    padding: 16px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .headerRight {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .scoreCard {
     flex-direction: column;
     text-align: center;
+    padding: 20px 16px;
+  }
+
+  .scoreInfo {
+    align-items: center;
+  }
+
+  .bioGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bioCard {
+    padding: 18px 16px;
+  }
+
+  .weeklyBarLabel {
+    font-size: 0.62rem;
   }
 
   .alertBanner {
     flex-direction: column;
+  }
+
+  .alertDismiss {
+    align-self: flex-start;
+    margin-top: 4px;
   }
 }
