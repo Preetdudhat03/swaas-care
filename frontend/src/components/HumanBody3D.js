@@ -508,7 +508,6 @@ function RealisticLungs({ activeCondition, onHotspotClick, gender = 'female' }) 
     const breath = Math.sin(t * 1.35) * 0.045;
 
     if (groupRef.current) {
-      const baseScale = 0.13;
       groupRef.current.scale.set(
         baseScale * (1 + breath * 0.75),
         baseScale * (1 + breath * 0.45),
