@@ -450,7 +450,7 @@ function RealisticLungs({ activeCondition, onHotspotClick }) {
     const breath = Math.sin(t * 1.35) * 0.045;
 
     if (groupRef.current) {
-      const baseScale = 0.095;
+      const baseScale = 0.13;
       groupRef.current.scale.set(
         baseScale * (1 + breath * 0.75),
         baseScale * (1 + breath * 0.45),
@@ -476,8 +476,8 @@ function RealisticLungs({ activeCondition, onHotspotClick }) {
   return (
     <group
       ref={groupRef}
-      position={[0, 0.51, 0.05]}
-      scale={[0.095, 0.095, 0.095]}
+      position={[0, 0.525, 0.05]}
+      scale={[0.13, 0.13, 0.13]}
       onClick={(e) => {
         e.stopPropagation();
         onHotspotClick?.('asthma');
