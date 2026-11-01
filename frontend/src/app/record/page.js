@@ -418,7 +418,13 @@ export default function RecordPage() {
               <div className={styles.processingOrb}>
                 <div className={styles.processingRing1} />
                 <div className={styles.processingRing2} />
-                <span className={styles.processingIcon}>🧠</span>
+                <span className={styles.processingIcon}>
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2a6 6 0 0 0-6 6c0 1.66.67 3.16 1.76 4.24l.24.24V15a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.52l.24-.24A6 6 0 0 0 12 2z" />
+                    <path d="M10 20h4" />
+                    <path d="M10 17h4" />
+                  </svg>
+                </span>
               </div>
               <h3 className={styles.processingTitle}>Analyzing Voice Biomarkers</h3>
               <p className={styles.processingDesc}>Consulting our Neural Engine...</p>
