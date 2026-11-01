@@ -341,7 +341,7 @@ export default function HomePage() {
 
             {/* Category panel — glass sidebar */}
             <motion.div
-              className={styles.categoryPanel}
+              className={`${styles.categoryPanel} ${activeCondition ? styles.categoryPanelHiddenOnMobile : ''}`}
               variants={slideRight}
               initial="hidden"
               animate="visible"
