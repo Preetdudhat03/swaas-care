@@ -63,6 +63,7 @@ export default function RecordPage() {
   const [saving, setSaving] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [backendStatus, setBackendStatus] = useState('checking'); // checking | online | offline
+  const [silenceWarning, setSilenceWarning] = useState(null);
 
   const audioContextRef = useRef(null);
   const analyzerRef = useRef(null);
