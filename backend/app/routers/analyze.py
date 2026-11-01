@@ -39,14 +39,46 @@ def analyze_voice(
 
         print(f"[INFO] Processing {filename} ({len(audio_bytes)} bytes)")
         
-        # 2. Fast Feature Extraction
+        # 2. Fast Feature Extraction with Voice Activity Detection (VAD)
         feat_start = time.time()
-        features_array = extract_features(audio_bytes)
-        print(f"[INFO] Feature extraction took {time.time() - feat_start:.3f}s")
+        features_array, has_speech, vad_reason = extract_features(audio_bytes, return_vad=True)
+        print(f"[INFO] VAD: has_speech={has_speech} ({vad_reason}) | extraction took {time.time() - feat_start:.3f}s")
         
+        if not has_speech:
+            total_time = time.time() - start_time
+            return {
+                "status": "no_speech_detected",
+                "message": "No voice was detected in the audio recording. Please speak clearly into your microphone.",
+                "extracted_features": {
+                    "voice_tremor": 0,
+                    "breathiness": 0,
+                    "pitch_variation": 0,
+                    "speech_energy": 0,
+                    "has_speech": False
+                },
+                "health_score": 0,
+                "risk_level": "insufficient_data",
+                "system_insights": {
+                    "respiratory": { "score": 0, "insight": "No vocal speech detected.", "status": "normal", "is_mock": False },
+                    "neurological": { "score": 0, "insight": "No vocal speech detected.", "status": "normal", "is_mock": False },
+                    "emotional": { "score": 0, "insight": "No vocal speech detected.", "status": "normal", "is_mock": False },
+                    "predictions": {
+                        "asthma": { "prediction": "No Voice Detected", "confidence": 0.0, "severity": 0 },
+                        "depression": { "prediction": "No Voice Detected", "confidence": 0.0, "severity": 0 },
+                        "parkinsons": { "prediction": "No Voice Detected", "confidence": 0.0, "severity": 0 }
+                    }
+                },
+                "predictions": {
+                    "asthma": { "prediction": "No Voice Detected", "confidence": 0.0, "severity": 0 },
+                    "depression": { "prediction": "No Voice Detected", "confidence": 0.0, "severity": 0 },
+                    "parkinsons": { "prediction": "No Voice Detected", "confidence": 0.0, "severity": 0 }
+                },
+                "processing_time_sec": round(total_time, 3)
+            }
+
         # 3. Fast Inference & Insight Generation
         pred_start = time.time()
-        analysis_result = generate_insights(features_array)
+        analysis_result = generate_insights(features_array, has_speech=True)
         print(f"[INFO] Inference took {time.time() - pred_start:.3f}s")
         
         total_time = time.time() - start_time
