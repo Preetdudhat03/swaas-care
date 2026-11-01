@@ -381,7 +381,7 @@ function RealisticBrain({ activeCondition, onHotspotClick, gender = 'male' }) {
    Loads authentic NIH Visible Human heart model featuring ventricles, atria,
    interventricular septum, and cardiac valves, with dynamic "lub-dub" double pulse.
    —————————————————————————————————————————————————————————————————————————— */
-function RealisticHeart({ activeCondition, onHotspotClick, gender = 'female' }) {
+function RealisticHeart({ activeCondition, onHotspotClick, gender = 'male' }) {
   const gltf = useGLTF('/models/heart.glb');
   const groupRef = useRef();
   const matRef = useRef();
