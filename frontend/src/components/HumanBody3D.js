@@ -866,7 +866,7 @@ function HumanBodyScene({ activeCondition, onHotspotClick, gender, isExplore }) 
 /* ——————————————————————————————————————————————————————————————————————————
    EXPORTED COMPONENT
    —————————————————————————————————————————————————————————————————————————— */
-export default function HumanBody3D({ activeCondition, onHotspotClick, style, gender = 'female', isExplore = false }) {
+export default function HumanBody3D({ activeCondition, onHotspotClick, style, gender = 'male', isExplore = false }) {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
 
