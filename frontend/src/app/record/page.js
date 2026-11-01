@@ -164,6 +164,7 @@ export default function RecordPage() {
   }, []);
 
   const startRecording = async () => {
+    setSilenceWarning(null);
     if (state === 'recording') {
       console.log("[DEBUG] startRecording called while already recording. Stopping instead.");
       stopRecording();
