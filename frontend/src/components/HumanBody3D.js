@@ -706,7 +706,7 @@ function AmbientParticles({ count = 80 }) {
 /* ——————————————————————————————————————————————————————————————————————————
    SMOOTH CINEMATIC CAMERA FLIGHT RIG
    —————————————————————————————————————————————————————————————————————————— */
-function CameraRig({ activeCondition, isExplore, gender = 'female' }) {
+function CameraRig({ activeCondition, isExplore, gender = 'male' }) {
   const { camera, size } = useThree();
   const mouse = useRef({ x: 0, y: 0 });
   const lookAtTarget = useRef(new THREE.Vector3(0, -0.2, 0));
