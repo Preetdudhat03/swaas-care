@@ -498,9 +498,6 @@ export default function RecordPage() {
                 </p>
               </div>
 
-              <div className={styles.waveformContainer}>
-                <canvas ref={canvasRef} width={600} height={80} className={styles.waveformCanvas} />
-              </div>
               <button className={styles.stopBtn} onClick={stopRecording}>Stop Recording</button>
             </div>
           )}
