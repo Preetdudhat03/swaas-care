@@ -149,7 +149,7 @@ export default function HomePage() {
         </motion.div>
       )}
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false}>
         {/* ===== HERO STATE ===== */}
         {!entered && !isIntro && (
           <motion.div
@@ -157,8 +157,8 @@ export default function HomePage() {
             className={styles.heroState}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.04, filter: 'blur(8px)' }}
-            transition={{ duration: 0.6 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
           >
             {/* Top Bar with Logo & Controls */}
             <motion.div
