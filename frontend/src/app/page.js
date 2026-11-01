@@ -317,9 +317,21 @@ export default function HomePage() {
                 </svg>
               </motion.button>
 
-              <div className={styles.genderToggle}>
-                <span className={gender === 'female' ? styles.genderActive : styles.genderInactive} onClick={() => setGender('female')}>FEMALE ♀</span>
-                <span className={gender === 'male' ? styles.genderActive : styles.genderInactive} onClick={() => setGender('male')}>MALE ♂</span>
+              <div className={styles.genderToggle} role="group" aria-label="Select Anatomical Model">
+                <button
+                  type="button"
+                  className={gender === 'female' ? styles.genderActive : styles.genderInactive}
+                  onClick={() => setGender('female')}
+                >
+                  FEMALE ♀
+                </button>
+                <button
+                  type="button"
+                  className={gender === 'male' ? styles.genderActive : styles.genderInactive}
+                  onClick={() => setGender('male')}
+                >
+                  MALE ♂
+                </button>
               </div>
 
               <span className={styles.exploreLogo}>Swaas<strong>Care</strong></span>
