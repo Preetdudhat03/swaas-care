@@ -84,7 +84,7 @@ export default function HomePage() {
   const [entered, setEntered] = useState(false);
   const [isIntro, setIsIntro] = useState(true);
   const [soundOn, setSoundOn] = useState(false);
-  const [gender, setGender] = useState('female');
+  const [gender, setGender] = useState('male');
 
   useEffect(() => {
     // 2.5s intro sequence
