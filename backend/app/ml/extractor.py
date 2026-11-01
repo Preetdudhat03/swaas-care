@@ -183,19 +183,16 @@ def extract_features(audio_input, sr=16000, return_vad=False):
             [pitch_mean, pitch_std]     # 2
         ]).astype(np.float32)
 
+        if return_vad:
+            return features, True, "Valid vocal speech detected"
         return features
 
     except Exception as e:
         print(f"[CRITICAL] Error in fast feature extraction: {e}")
         traceback.print_exc()
-        # Safe default 50-feature array
         defaults = np.zeros(50, dtype=np.float32)
-        defaults[40] = 0.04
-        defaults[42] = 0.08
-        defaults[44] = 1800.0
-        defaults[46] = 1200.0
-        defaults[48] = 140.0
-        defaults[49] = 18.0
+        if return_vad:
+            return defaults, False, str(e)
         return defaults
     finally:
         y = None
@@ -207,13 +204,25 @@ def normalize_clip(val, min_val, max_val):
     if val > max_val: return 100.0
     return ((val - min_val) / (max_val - min_val)) * 100.0
 
-def get_feature_dict(features_array):
+def get_feature_dict(features_array, has_speech=True):
     """
     Helper to convert the 50-item array back into a readable dictionary.
     All primary biomarkers are mapped to a strict 0-100 scale for UI/DB consistency.
     """
-    if features_array is None or len(features_array) < 50:
-        return {}
+    if features_array is None or len(features_array) < 50 or not has_speech:
+        return {
+            "voice_tremor": 0,
+            "breathiness": 0,
+            "pitch_variation": 0,
+            "speech_energy": 0,
+            "has_speech": False,
+            "raw_attributes": {
+                "pitch_hz": 0.0,
+                "zcr": 0.0,
+                "rms": 0.0,
+                "mfcc_mean_idx0": 0.0
+            }
+        }
         
     energy_raw = float(features_array[40])
     zcr_raw = float(features_array[42])
