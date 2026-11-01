@@ -65,20 +65,34 @@ def predict_parkinsons(features):
       - 50 acoustic feature array from live audio feature extraction
     """
     features_arr = np.array(features, dtype=np.float32).flatten()
+    energy = float(features_arr[40]) if len(features_arr) >= 50 else 0.05
+
+    # Guard: silence or ambient noise must never trigger parkinsons
+    if energy < 0.02:
+        return {
+            "prediction": "Normal",
+            "confidence": 0.95,
+            "severity": 0,
+            "is_mock": True
+        }
     
     # 1. Fallback heuristic if models are not yet trained/available
     if not os.path.exists(MODEL_PATH) or not os.path.exists(SCALER_PATH):
         pitch_std = features_arr[49] if len(features_arr) >= 50 else (features_arr[3] * 1000)
         rms_std = features_arr[41] if len(features_arr) >= 50 else (features_arr[8] * 2)
         
-        jitter_score = min(100, (pitch_std / 120.0) * 100)
-        shimmer_score = min(100, (rms_std / 0.10) * 100)
-        instability_index = (jitter_score * 0.7) + (shimmer_score * 0.3)
-        is_risky = instability_index > 55.0
+        if pitch_std < 25.0:
+            instability_index = max(5, min(35, int(pitch_std)))
+            is_risky = False
+        else:
+            jitter_score = min(100, (pitch_std / 70.0) * 100)
+            shimmer_score = min(100, (rms_std / 0.12) * 100)
+            instability_index = (jitter_score * 0.7) + (shimmer_score * 0.3)
+            is_risky = instability_index > 65.0
         
         return {
             "prediction": "Parkinsons" if is_risky else "Normal",
-            "confidence": 0.85 + (instability_index / 1000.0),
+            "confidence": 0.85 if is_risky else 0.95,
             "severity": round(instability_index),
             "is_mock": True
         }
