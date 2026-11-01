@@ -424,24 +424,6 @@ export default function HomePage() {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Sound toggle */}
-            <button
-              className={styles.soundToggle}
-              onClick={() => setSoundOn(!soundOn)}
-              style={{ opacity: 1 }}
-            >
-              <span className={styles.soundBars}>
-                {[...Array(4)].map((_, i) => (
-                  <span
-                    key={i}
-                    className={`${styles.soundBar} ${soundOn ? styles.soundBarActive : ''}`}
-                    style={{ animationDelay: `${i * 0.12}s` }}
-                  />
-                ))}
-              </span>
-              <span className={styles.soundLabel}>SOUND {soundOn ? 'ON' : 'OFF'}</span>
-            </button>
           </motion.div>
         )}
       </AnimatePresence>
