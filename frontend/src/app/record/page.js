@@ -448,7 +448,18 @@ export default function RecordPage() {
                   </svg>
                 </button>
               </div>
-              <p className={styles.idleHint}>Tap to start recording</p>
+              <p className={styles.idleHint}>Tap microphone to start recording</p>
+
+              {/* Reading Passage Preview Card */}
+              <div className={styles.readingPromptCard}>
+                <div className={styles.readingPromptHeader}>
+                  <span className={styles.promptBadge}>📖 Reading Prompt</span>
+                  <span className={styles.promptHint}>Read aloud once recording begins</span>
+                </div>
+                <p className={styles.readingPromptText}>
+                  “The morning sunlight spread across the quiet blue sky, bringing warmth and fresh air into the room. Taking a calm, steady breath helps keep my voice clear, balanced, and healthy throughout the day.”
+                </p>
+              </div>
             </div>
           )}
 
@@ -473,8 +484,22 @@ export default function RecordPage() {
                   <span className={styles.timerLabel}>seconds</span>
                 </div>
               </div>
+
+              {/* Active Reading Passage Card */}
+              <div className={`${styles.readingPromptCard} ${styles.readingPromptActive}`}>
+                <div className={styles.readingPromptHeader}>
+                  <span className={styles.promptBadge}>📖 Please Read Aloud</span>
+                  <span className={styles.promptLivePill}>
+                    <span className={styles.promptLiveDot} /> Speak Continuously
+                  </span>
+                </div>
+                <p className={styles.readingPromptText}>
+                  “The morning sunlight spread across the quiet blue sky, bringing warmth and fresh air into the room. Taking a calm, steady breath helps keep my voice clear, balanced, and healthy throughout the day.”
+                </p>
+              </div>
+
               <div className={styles.waveformContainer}>
-                <canvas ref={canvasRef} width={600} height={120} className={styles.waveformCanvas} />
+                <canvas ref={canvasRef} width={600} height={80} className={styles.waveformCanvas} />
               </div>
               <button className={styles.stopBtn} onClick={stopRecording}>Stop Recording</button>
             </div>
