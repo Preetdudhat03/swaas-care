@@ -421,6 +421,13 @@ export default function HomePage() {
                     </div>
                     <button className={styles.tourBtn} onClick={handleNext}>Next →</button>
                   </div>
+
+                  <button
+                    className={styles.backToListBtn}
+                    onClick={() => setActiveCondition(null)}
+                  >
+                    View All Conditions
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
