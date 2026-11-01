@@ -343,7 +343,7 @@ export default function RecordPage() {
       const errorMsg = isFetchErr 
         ? 'Could not connect to the AI analysis engine. The backend might still be warming up or restarting. Please try again in a few moments.'
         : `Analysis failed: ${err.message}`;
-      alert(errorMsg);
+      setSilenceWarning(errorMsg);
       setState('idle');
     }
   };
