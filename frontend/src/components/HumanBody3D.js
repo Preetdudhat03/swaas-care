@@ -616,7 +616,7 @@ function DetailedInternalOrgans({ activeCondition, onHotspotClick, gender = 'mal
    INTERACTIVE 3D HOTSPOT PINS
    Pulsing holographic targets hovering near key organs in explore mode.
    —————————————————————————————————————————————————————————————————————————— */
-function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore, gender = 'female' }) {
+function InteractiveHotspots({ activeCondition, onHotspotClick, isExplore, gender = 'male' }) {
   if (!isExplore) return null;
   const isMale = gender === 'male';
 
