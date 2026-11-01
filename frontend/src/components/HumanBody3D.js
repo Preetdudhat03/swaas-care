@@ -763,10 +763,10 @@ function CameraRig({ activeCondition, isExplore, gender = 'female' }) {
       } else if (viewKey === 'explore') {
         baseTargetX = 0;
         basePosX = 0;
-        baseTargetY = 0.15;
-        basePosY = 0.15;
+        baseTargetY = 0.55;
+        basePosY = 0.55;
         if (aspect < 0.65) {
-          basePosZ = 7.6 * Math.min(1.32, 0.65 / aspect);
+          basePosZ = 6.8 * Math.min(1.28, 0.65 / aspect);
         }
       } else {
         baseTargetX = 0;
