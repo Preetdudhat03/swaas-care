@@ -8,50 +8,91 @@ import gc
 def check_voice_activity(y, sr=16000):
     """
     Evaluates whether the audio contains genuine human speech or merely silence/background noise.
+    Uses 4-stage verification:
+    1. Absolute acoustic energy threshold.
+    2. High-pass filtering (75 Hz) to remove mains hum and low-frequency rumble.
+    3. Dynamic contrast analysis across 40ms frames (rejects stationary room noise/fans/AC).
+    4. Harmonic pitch autocorrelation (identifies vocal fold periodicity in 75Hz-400Hz range).
     Returns (has_speech: bool, reason: str, metrics: dict)
     """
     if y is None or len(y) == 0:
-        return False, "Audio data is empty", {"rms": 0.0, "max": 0.0, "active_ratio": 0.0}
+        return False, "Audio data is empty", {"rms": 0.0, "max": 0.0, "voiced_sec": 0.0}
 
     # Ensure mono
     if len(y.shape) > 1:
         y = np.mean(y, axis=1)
 
+    raw_peak = float(np.max(np.abs(y)))
     raw_rms = float(np.sqrt(np.mean(y**2)))
-    raw_max = float(np.max(np.abs(y)))
 
-    # If raw maximum peak or overall RMS is below absolute acoustic threshold, it's silence/noise
-    if raw_max < 0.035 or raw_rms < 0.005:
-        return False, f"Audio energy too low (peak: {raw_max:.4f}, rms: {raw_rms:.4f})", {
-            "rms": raw_rms, "max": raw_max, "active_ratio": 0.0
+    # 1. Absolute acoustic minimum: human voice spoken near mic easily reaches >= 0.06 peak
+    if raw_peak < 0.06 or raw_rms < 0.008:
+        return False, f"Audio energy too low (peak: {raw_peak:.3f}, rms: {raw_rms:.4f})", {
+            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0
         }
 
-    # Frame-level energy check (30ms frames with 15ms step)
-    frame_len = int(sr * 0.03)  # 480 samples
-    hop_len = int(sr * 0.015)   # 240 samples
-    num_frames = max(1, (len(y) - frame_len) // hop_len)
+    # 2. High-pass filter (75 Hz cutoff) to eliminate DC offset, mic rumble and 50/60 Hz mains hum
+    try:
+        sos = scipy.signal.butter(4, 75, btype='highpass', fs=sr, output='sos')
+        y_filt = scipy.signal.sosfilt(sos, y)
+    except Exception:
+        y_filt = y
 
-    active_frames = 0
-    speech_thresh = max(0.015, raw_rms * 0.45)
+    # 3. Dynamic contrast analysis across 40ms frames (rejects stationary fan, AC, hum)
+    frame_len = int(sr * 0.04)  # 40ms = 640 samples
+    hop_len = int(sr * 0.02)    # 20ms = 320 samples
+    num_frames = (len(y_filt) - frame_len) // hop_len
+    if num_frames < 10:
+        return False, "Audio too short for clinical voice analysis", {
+            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0
+        }
 
+    frame_rms_list = []
     for i in range(num_frames):
         start = i * hop_len
-        frame = y[start:start + frame_len]
-        frame_rms = np.sqrt(np.mean(frame**2))
-        if frame_rms > speech_thresh:
-            active_frames += 1
+        f = y_filt[start:start + frame_len]
+        frame_rms_list.append(float(np.sqrt(np.mean(f**2))))
 
-    active_ratio = active_frames / num_frames
-    active_sec = active_frames * 0.015
+    frame_rms_arr = np.array(frame_rms_list)
+    p90 = float(np.percentile(frame_rms_arr, 90))
+    p10 = float(np.percentile(frame_rms_arr, 10))
+    dynamic_ratio = p90 / (p10 + 1e-6)
+    rms_std = float(np.std(frame_rms_arr))
 
-    # Human speech must have at least 0.35 seconds of voice activity and at least 5% active ratio
-    if active_sec < 0.35 or active_ratio < 0.05:
-        return False, f"Insufficient vocal activity ({active_sec:.2f}s of speech detected)", {
-            "rms": raw_rms, "max": raw_max, "active_ratio": active_ratio
+    # Stationary background noise (AC, fan, background hiss) has flat energy profile
+    if dynamic_ratio < 2.0 and rms_std < 0.008 and raw_peak < 0.15:
+        return False, f"Stationary background noise detected (contrast ratio: {dynamic_ratio:.2f}, std: {rms_std:.4f})", {
+            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0
         }
 
-    return True, "Valid vocal speech detected", {
-        "rms": raw_rms, "max": raw_max, "active_ratio": active_ratio
+    # 4. Harmonic periodicity check (Vocal fold vibration in 75Hz - 400Hz range)
+    lag_min = int(sr / 400)  # 40 samples (400 Hz)
+    lag_max = int(sr / 75)   # 213 samples (75 Hz)
+
+    speech_energy_thresh = max(0.025, p10 * 2.2)
+
+    voiced_frames = 0
+    for i in range(num_frames):
+        f_rms = frame_rms_arr[i]
+        if f_rms > speech_energy_thresh:
+            start = i * hop_len
+            frame = y_filt[start:start + frame_len]
+            frame_centered = frame - np.mean(frame)
+            norm = np.sum(frame_centered**2) + 1e-10
+            corr = np.correlate(frame_centered, frame_centered, mode='full')
+            mid = len(frame_centered) - 1
+            corr_lags = corr[mid + lag_min : mid + lag_max + 1] / norm
+            if float(np.max(corr_lags)) > 0.36:
+                voiced_frames += 1
+
+    voiced_sec = voiced_frames * 0.02
+    if voiced_sec < 0.35:
+        return False, f"No human vocal periodicity detected (voiced: {voiced_sec:.2f}s)", {
+            "rms": raw_rms, "max": raw_peak, "voiced_sec": voiced_sec
+        }
+
+    return True, f"Valid human vocal speech detected (voiced: {voiced_sec:.2f}s)", {
+        "rms": raw_rms, "max": raw_peak, "voiced_sec": voiced_sec
     }
 
 
