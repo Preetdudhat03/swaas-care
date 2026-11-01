@@ -242,18 +242,41 @@ export default function RecordPage() {
 
       console.log(`[DEBUG] Final sample length: ${samples.length}`);
 
-      // Client-side Voice Activity Check (Silence Guard)
-      let sumSq = 0;
+      // Client-side Voice Activity Check (Silence & Background Noise Guard)
+      const frameSize = 800; // 50ms at 16kHz
+      const numFrames = Math.floor(samples.length / frameSize);
       let maxAmp = 0;
-      for (let i = 0; i < samples.length; i++) {
-        const absVal = Math.abs(samples[i]);
-        if (absVal > maxAmp) maxAmp = absVal;
-        sumSq += absVal * absVal;
-      }
-      const rms = Math.sqrt(sumSq / (samples.length || 1));
-      console.log(`[DEBUG] Audio volume check: maxAmp=${maxAmp.toFixed(4)}, rms=${rms.toFixed(5)}`);
+      const frameRmsList = [];
 
-      if (maxAmp < 0.035 || rms < 0.005) {
+      for (let f = 0; f < numFrames; f++) {
+        let frameEnergy = 0;
+        const start = f * frameSize;
+        for (let i = 0; i < frameSize; i++) {
+          const absVal = Math.abs(samples[start + i]);
+          if (absVal > maxAmp) maxAmp = absVal;
+          frameEnergy += absVal * absVal;
+        }
+        frameRmsList.push(Math.sqrt(frameEnergy / frameSize));
+      }
+
+      // Sort frame RMS values to determine noise floor (p10) vs peak speech (p90)
+      const sortedRms = [...frameRmsList].sort((a, b) => a - b);
+      const p10 = sortedRms[Math.floor(sortedRms.length * 0.1)] || 0;
+      const p90 = sortedRms[Math.floor(sortedRms.length * 0.9)] || 0;
+      const dynamicRatio = p10 > 0 ? (p90 / p10) : (p90 > 0.01 ? 10 : 1);
+
+      // Audible voiced frames must be above ambient noise and exceed absolute speech threshold
+      const speechThresh = Math.max(0.028, p10 * 2.2);
+      let audibleFrames = 0;
+      for (const fRms of frameRmsList) {
+        if (fRms > speechThresh) audibleFrames++;
+      }
+      const voicedSeconds = audibleFrames * 0.05;
+
+      console.log(`[DEBUG] Audio check: maxAmp=${maxAmp.toFixed(4)}, p10=${p10.toFixed(4)}, p90=${p90.toFixed(4)}, ratio=${dynamicRatio.toFixed(2)}, voicedSec=${voicedSeconds.toFixed(2)}s`);
+
+      // Reject if total voiced time is under 0.40s, peak amplitude is too weak, or signal is flat stationary noise
+      if (maxAmp < 0.06 || voicedSeconds < 0.40 || (dynamicRatio < 1.8 && maxAmp < 0.15)) {
         setSilenceWarning("No speech detected. Please speak clearly into your microphone while recording.");
         setState('idle');
         return;
