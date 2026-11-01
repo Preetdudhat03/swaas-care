@@ -188,7 +188,7 @@ function RealisticHumanModel({ gender = 'male' }) {
    ELEGANT ANATOMICAL SILHOUETTE (FALLBACK & LOADING STATE)
    Clean, contoured silhouette that ensures the scene is never blank.
    —————————————————————————————————————————————————————————————————————————— */
-function FallbackAnatomicalFigure({ gender = 'female' }) {
+function FallbackAnatomicalFigure({ gender = 'male' }) {
   const isMale = gender === 'male';
   return (
     <group position={[0, -0.2, 0]}>
