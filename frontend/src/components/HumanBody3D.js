@@ -138,7 +138,7 @@ function cleanBodyGeometry(mesh) {
   return geom;
 }
 
-function RealisticHumanModel({ gender = 'female' }) {
+function RealisticHumanModel({ gender = 'male' }) {
   const modelUrl = gender === 'male' ? '/models/body-male.glb' : '/models/body-female.glb';
   const gltf = useGLTF(modelUrl);
 
