@@ -239,7 +239,7 @@ function FallbackAnatomicalFigure({ gender = 'male' }) {
    (cerebral cortex, gyri/sulci, cerebellum, brainstem, hippocampus, ventricles)
    fitted snugly inside the cranium with reactive synaptic neural firing.
    —————————————————————————————————————————————————————————————————————————— */
-function RealisticBrain({ activeCondition, onHotspotClick, gender = 'female' }) {
+function RealisticBrain({ activeCondition, onHotspotClick, gender = 'male' }) {
   const gltf = useGLTF('/models/brain.glb');
   const matRef = useRef();
   const synapsePointsRef = useRef();
