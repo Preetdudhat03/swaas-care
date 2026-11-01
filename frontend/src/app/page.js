@@ -293,21 +293,24 @@ export default function HomePage() {
           <motion.div
             key="explore"
             className={styles.exploreState}
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.35 }}
           >
             {/* Top bar */}
             <motion.div
               className={styles.exploreTop}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ duration: 0.4 }}
             >
               <motion.button
                 className={styles.backBtn}
-                onClick={() => setEntered(false)}
+                onClick={() => {
+                  setActiveCondition(null);
+                  setEntered(false);
+                }}
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.95 }}
                 aria-label="Back to home overview"
