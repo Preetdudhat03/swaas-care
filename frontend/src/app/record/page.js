@@ -241,6 +241,24 @@ export default function RecordPage() {
       }
 
       console.log(`[DEBUG] Final sample length: ${samples.length}`);
+
+      // Client-side Voice Activity Check (Silence Guard)
+      let sumSq = 0;
+      let maxAmp = 0;
+      for (let i = 0; i < samples.length; i++) {
+        const absVal = Math.abs(samples[i]);
+        if (absVal > maxAmp) maxAmp = absVal;
+        sumSq += absVal * absVal;
+      }
+      const rms = Math.sqrt(sumSq / (samples.length || 1));
+      console.log(`[DEBUG] Audio volume check: maxAmp=${maxAmp.toFixed(4)}, rms=${rms.toFixed(5)}`);
+
+      if (maxAmp < 0.035 || rms < 0.005) {
+        setSilenceWarning("No speech detected. Please speak clearly into your microphone while recording.");
+        setState('idle');
+        return;
+      }
+
       const wavBlob = encodeWAV(samples);
       uploadAudio(wavBlob);
     } catch (e) {
@@ -269,7 +287,13 @@ export default function RecordPage() {
       if (!response.ok) throw new Error('Analysis failed');
       
       const data = await response.json();
-      console.log("[DEBUG] Analysis data received successfully.");
+      console.log("[DEBUG] Analysis data received successfully.", data);
+
+      if (data.status === 'no_speech_detected') {
+        setSilenceWarning(data.message || "No vocal speech detected. Please record while speaking continuously.");
+        setState('idle');
+        return;
+      }
 
       // Map API response to UI results format (Refined for 3-model Integration)
       const insights = data.system_insights || {};
