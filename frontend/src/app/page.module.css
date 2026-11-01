@@ -663,6 +663,10 @@
   transform: scale(1.3);
 }
 
+.backToListBtn {
+  display: none;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 1024px) {
   .heroLeft {
