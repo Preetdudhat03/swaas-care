@@ -588,7 +588,7 @@ function RealisticLungs({ activeCondition, onHotspotClick, gender = 'male' }) {
    AUTHENTIC INTERNAL ORGANS CONTAINER
    Encapsulates Brain, Heart, and Lungs with error boundaries and suspense.
    —————————————————————————————————————————————————————————————————————————— */
-function DetailedInternalOrgans({ activeCondition, onHotspotClick, gender = 'female' }) {
+function DetailedInternalOrgans({ activeCondition, onHotspotClick, gender = 'male' }) {
   return (
     <group>
       <ModelErrorBoundary fallback={null}>
