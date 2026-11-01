@@ -756,15 +756,17 @@ function CameraRig({ activeCondition, isExplore, gender = 'female' }) {
     if (isMobile) {
       if (viewKey === 'hero') {
         if (aspect < 0.65) {
-          basePosZ = view.pos[2] * Math.min(1.35, 0.65 / aspect);
+          basePosZ = view.pos[2] * Math.min(1.38, 0.65 / aspect);
+          baseTargetY = -0.38;
+          basePosY = -0.38;
         }
       } else if (viewKey === 'explore') {
         baseTargetX = 0;
         basePosX = 0;
-        baseTargetY = 0.2;
-        basePosY = 0.2;
+        baseTargetY = 0.15;
+        basePosY = 0.15;
         if (aspect < 0.65) {
-          basePosZ = 7.6 * Math.min(1.3, 0.65 / aspect);
+          basePosZ = 7.6 * Math.min(1.32, 0.65 / aspect);
         }
       } else {
         baseTargetX = 0;

@@ -160,7 +160,7 @@ export default function HomePage() {
             exit={{ opacity: 0, scale: 1.04, filter: 'blur(8px)' }}
             transition={{ duration: 0.6 }}
           >
-            {/* Logo */}
+            {/* Top Bar with Logo & Controls */}
             <motion.div
               className={styles.topBar}
               initial={{ opacity: 0, y: -20 }}
@@ -173,6 +173,46 @@ export default function HomePage() {
                   <path d="M10 20 C12 12, 14 22, 16 16 C18 10, 20 20, 22 14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
                 </svg>
                 <span className={styles.logoName}>Swaas<strong>Care</strong></span>
+              </div>
+
+              <div className={styles.topBarActions}>
+                <div className={styles.heroGenderToggle} role="group" aria-label="Select Anatomical Model">
+                  <button
+                    type="button"
+                    className={gender === 'female' ? styles.heroGenderActive : styles.heroGenderInactive}
+                    onClick={() => setGender('female')}
+                  >
+                    ♀ FEMALE
+                  </button>
+                  <button
+                    type="button"
+                    className={gender === 'male' ? styles.heroGenderActive : styles.heroGenderInactive}
+                    onClick={() => setGender('male')}
+                  >
+                    ♂ MALE
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.topSoundToggle}
+                  onClick={() => setSoundOn(!soundOn)}
+                  aria-label={soundOn ? 'Sound is on, click to mute' : 'Sound is off, click to unmute'}
+                >
+                  {soundOn ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                      <line x1="23" y1="9" x2="17" y2="15" />
+                      <line x1="17" y1="9" x2="23" y2="15" />
+                    </svg>
+                  )}
+                  <span className={styles.soundLabel}>{soundOn ? 'ON' : 'OFF'}</span>
+                </button>
               </div>
             </motion.div>
 
@@ -245,26 +285,6 @@ export default function HomePage() {
             >
               Start Experience
             </motion.button>
-
-            {/* Sound toggle */}
-            <motion.button
-              className={styles.soundToggle}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-              onClick={() => setSoundOn(!soundOn)}
-            >
-              <span className={styles.soundBars}>
-                {[...Array(4)].map((_, i) => (
-                  <span
-                    key={i}
-                    className={`${styles.soundBar} ${soundOn ? styles.soundBarActive : ''}`}
-                    style={{ animationDelay: `${i * 0.12}s` }}
-                  />
-                ))}
-              </span>
-              <span className={styles.soundLabel}>SOUND {soundOn ? 'ON' : 'OFF'}</span>
-            </motion.button>
           </motion.div>
         )}
 
@@ -290,6 +310,7 @@ export default function HomePage() {
                 onClick={() => setEntered(false)}
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.95 }}
+                aria-label="Back to home overview"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
@@ -313,6 +334,7 @@ export default function HomePage() {
               initial="hidden"
               animate="visible"
             >
+              <div className={styles.sheetHandle} />
               <p className={styles.categoryTitle}>EXPLORE CONDITIONS</p>
 
               {Object.entries(CONDITIONS).map(([id, cond], i) => (
