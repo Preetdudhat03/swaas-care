@@ -5,7 +5,57 @@ import scipy.signal
 import traceback
 import gc
 
-def extract_features(audio_input, sr=16000):
+def check_voice_activity(y, sr=16000):
+    """
+    Evaluates whether the audio contains genuine human speech or merely silence/background noise.
+    Returns (has_speech: bool, reason: str, metrics: dict)
+    """
+    if y is None or len(y) == 0:
+        return False, "Audio data is empty", {"rms": 0.0, "max": 0.0, "active_ratio": 0.0}
+
+    # Ensure mono
+    if len(y.shape) > 1:
+        y = np.mean(y, axis=1)
+
+    raw_rms = float(np.sqrt(np.mean(y**2)))
+    raw_max = float(np.max(np.abs(y)))
+
+    # If raw maximum peak or overall RMS is below absolute acoustic threshold, it's silence/noise
+    if raw_max < 0.035 or raw_rms < 0.005:
+        return False, f"Audio energy too low (peak: {raw_max:.4f}, rms: {raw_rms:.4f})", {
+            "rms": raw_rms, "max": raw_max, "active_ratio": 0.0
+        }
+
+    # Frame-level energy check (30ms frames with 15ms step)
+    frame_len = int(sr * 0.03)  # 480 samples
+    hop_len = int(sr * 0.015)   # 240 samples
+    num_frames = max(1, (len(y) - frame_len) // hop_len)
+
+    active_frames = 0
+    speech_thresh = max(0.015, raw_rms * 0.45)
+
+    for i in range(num_frames):
+        start = i * hop_len
+        frame = y[start:start + frame_len]
+        frame_rms = np.sqrt(np.mean(frame**2))
+        if frame_rms > speech_thresh:
+            active_frames += 1
+
+    active_ratio = active_frames / num_frames
+    active_sec = active_frames * 0.015
+
+    # Human speech must have at least 0.35 seconds of voice activity and at least 5% active ratio
+    if active_sec < 0.35 or active_ratio < 0.05:
+        return False, f"Insufficient vocal activity ({active_sec:.2f}s of speech detected)", {
+            "rms": raw_rms, "max": raw_max, "active_ratio": active_ratio
+        }
+
+    return True, "Valid vocal speech detected", {
+        "rms": raw_rms, "max": raw_max, "active_ratio": active_ratio
+    }
+
+
+def extract_features(audio_input, sr=16000, return_vad=False):
     """
     Ultra-fast (<25ms), zero-leak acoustic biomarker feature extractor.
     Extracts authentic 50 clinical features (20 MFCC means, 20 MFCC stds,
@@ -13,6 +63,8 @@ def extract_features(audio_input, sr=16000):
     Guaranteed memory-safe on 512MB RAM instances.
     """
     y = None
+    has_speech = True
+    vad_reason = "Initialized"
 
     try:
         # 1. Load Audio Data
@@ -35,7 +87,7 @@ def extract_features(audio_input, sr=16000):
                         y = np.frombuffer(raw_data, dtype=np.int16).astype(np.float32) / 32768.0
                 except Exception as w_err:
                     print(f"[WARN] wave read failed: {w_err}")
-                    y = np.random.randn(sr * 2).astype(np.float32) * 0.01
+                    y = np.zeros(sr * 2, dtype=np.float32)
         elif isinstance(audio_input, np.ndarray):
             y = audio_input
         else:
@@ -53,12 +105,21 @@ def extract_features(audio_input, sr=16000):
         if len(y) > max_samples:
             y = y[:max_samples]
 
-        # 4. Normalize
+        # 4. Voice Activity Detection (VAD)
+        has_speech, vad_reason, _ = check_voice_activity(y, sr)
+        if not has_speech:
+            print(f"[INFO] VAD: No speech detected ({vad_reason})")
+            defaults = np.zeros(50, dtype=np.float32)
+            if return_vad:
+                return defaults, False, vad_reason
+            return defaults
+
+        # 5. Normalize (Only normalize if true voice signal exists)
         max_abs = np.max(np.abs(y))
-        if max_abs > 0:
+        if max_abs >= 0.05:
             y = y / max_abs
 
-        # 5. Pad if too short (<0.5s)
+        # 6. Pad if too short (<0.5s)
         if len(y) < sr // 2:
             padding = (sr // 2) - len(y)
             y = np.pad(y, (0, padding), 'constant')
