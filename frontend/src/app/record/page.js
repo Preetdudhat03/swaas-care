@@ -89,7 +89,15 @@ export default function RecordPage() {
     };
     checkBackend();
     
+    const handleResize = () => {
+      if (canvasRef.current && canvasRef.current.parentElement) {
+        canvasRef.current.width = Math.min(600, canvasRef.current.parentElement.clientWidth - 32);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    
     return () => {
+      window.removeEventListener('resize', handleResize);
       stopStreams();
     };
   }, []);
