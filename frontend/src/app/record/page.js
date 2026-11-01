@@ -392,6 +392,24 @@ export default function RecordPage() {
             <p className={styles.subtitle}>
               Record a 15-second voice sample for AI biomarker analysis
             </p>
+
+            {silenceWarning && (
+              <div className={styles.silenceBanner}>
+                <span className={styles.silenceIcon}>⚠️</span>
+                <div className={styles.silenceText}>
+                  <strong>No Voice Detected</strong>
+                  <p>{silenceWarning}</p>
+                </div>
+                <button
+                  type="button"
+                  className={styles.silenceDismiss}
+                  onClick={() => setSilenceWarning(null)}
+                  aria-label="Dismiss warning"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </header>
 
           {state === 'idle' && (
