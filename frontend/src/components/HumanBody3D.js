@@ -480,7 +480,7 @@ function RealisticHeart({ activeCondition, onHotspotClick, gender = 'male' }) {
    Loads authentic OrganUI / BodyParts3D lungs model featuring full trachea,
    bronchial tree, right and left lung lobes, and tidal respiration expansion.
    —————————————————————————————————————————————————————————————————————————— */
-function RealisticLungs({ activeCondition, onHotspotClick, gender = 'female' }) {
+function RealisticLungs({ activeCondition, onHotspotClick, gender = 'male' }) {
   const gltf = useGLTF('/models/lungs.glb');
   const groupRef = useRef();
   const lungMatRef = useRef();
