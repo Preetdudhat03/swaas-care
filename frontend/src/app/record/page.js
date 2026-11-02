@@ -173,7 +173,14 @@ export default function RecordPage() {
     
     console.log("[DEBUG] Phase: STARTING RECORDING");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          noiseSuppression: true,
+          echoCancellation: true,
+          autoGainControl: true,
+          channelCount: 1,
+        }
+      });
       streamRef.current = stream;
       
       const AudioContext = window.AudioContext || window.webkitAudioContext;
