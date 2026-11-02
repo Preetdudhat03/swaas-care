@@ -42,6 +42,33 @@ function encodeWAV(samples) {
 
 const RECORD_DURATION = 15;
 
+const ANALYSIS_STAGES = [
+  {
+    id: 'audio_cleanup',
+    title: 'Acoustic Cleansing & Denoising',
+    desc: 'Filtering ambient room noise and isolating clean vocal frequencies',
+    icon: '🎛️',
+  },
+  {
+    id: 'feature_extraction',
+    title: 'Acoustic Biomarker Extraction',
+    desc: 'Extracting 50 features: MFCCs, pitch jitter, shimmer & vocal formants',
+    icon: '〰️',
+  },
+  {
+    id: 'neural_models',
+    title: 'Multi-Model Neural Diagnostics',
+    desc: 'Evaluating Respiratory (Asthma), Neurological & Mood indicators',
+    icon: '🧠',
+  },
+  {
+    id: 'clinical_synthesis',
+    title: 'Synthesizing Health Insights',
+    desc: 'Calculating overall vitality score and personalized clinical report',
+    icon: '✨',
+  },
+];
+
 function getApiBaseUrl() {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl && envUrl.trim() !== '') {
@@ -64,6 +91,8 @@ export default function RecordPage() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [backendStatus, setBackendStatus] = useState('checking'); // checking | online | offline
   const [silenceWarning, setSilenceWarning] = useState(null);
+  const [analysisStage, setAnalysisStage] = useState(0);
+  const [analysisProgress, setAnalysisProgress] = useState(12);
 
   const audioContextRef = useRef(null);
   const analyzerRef = useRef(null);
@@ -102,6 +131,36 @@ export default function RecordPage() {
       stopStreams();
     };
   }, []);
+
+  // Real-time stage progression during processing
+  useEffect(() => {
+    if (state !== 'processing') {
+      setAnalysisStage(0);
+      setAnalysisProgress(12);
+      return;
+    }
+
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+
+      if (elapsed < 1200) {
+        setAnalysisStage(0);
+        setAnalysisProgress(Math.min(28, Math.round(12 + (elapsed / 1200) * 16)));
+      } else if (elapsed < 2600) {
+        setAnalysisStage(1);
+        setAnalysisProgress(Math.min(58, Math.round(28 + ((elapsed - 1200) / 1400) * 30)));
+      } else if (elapsed < 4200) {
+        setAnalysisStage(2);
+        setAnalysisProgress(Math.min(85, Math.round(58 + ((elapsed - 2600) / 1600) * 27)));
+      } else {
+        setAnalysisStage(3);
+        setAnalysisProgress((prev) => (prev < 95 ? prev + 1 : 95));
+      }
+    }, 180);
+
+    return () => clearInterval(interval);
+  }, [state]);
 
   const stopStreams = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -342,6 +401,11 @@ export default function RecordPage() {
         { id: 'parkinsons', label: "Parkinson's", icon: '🧠', result: predictions.parkinsons?.prediction || 'Normal', confidence: Math.round((predictions.parkinsons?.confidence || 0) * 100), status: predictions.parkinsons?.prediction === 'Parkinsons' ? 'warning' : 'good' }
       ];
 
+      // Complete all stages to 100% with checkmark before transitioning
+      setAnalysisStage(4);
+      setAnalysisProgress(100);
+      await new Promise((resolve) => setTimeout(resolve, 450));
+
       setResults({ raw: data, ui: mappedResults, diseases: diseasePredictions, finalAudioUrl: 'none' });
       setState('results');
     } catch (err) {
@@ -514,16 +578,68 @@ export default function RecordPage() {
               <div className={styles.processingOrb}>
                 <div className={styles.processingRing1} />
                 <div className={styles.processingRing2} />
-                <span className={styles.processingIcon}>
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2a6 6 0 0 0-6 6c0 1.66.67 3.16 1.76 4.24l.24.24V15a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.52l.24-.24A6 6 0 0 0 12 2z" />
-                    <path d="M10 20h4" />
-                    <path d="M10 17h4" />
-                  </svg>
-                </span>
+                <div className={styles.processingRing3} />
+                <span className={styles.processingIcon}>🧠</span>
               </div>
               <h3 className={styles.processingTitle}>Analyzing Voice Biomarkers</h3>
-              <p className={styles.processingDesc}>Consulting our Neural Engine...</p>
+              <p className={styles.processingDesc}>
+                {analysisStage >= 4 
+                  ? 'All neural models completed! Preparing your clinical report...'
+                  : ANALYSIS_STAGES[Math.min(analysisStage, 3)].desc}
+              </p>
+
+              {/* Real-time Stage Progress Display */}
+              <div className={styles.stagesCard}>
+                <div className={styles.progressBarWrapper}>
+                  <div className={styles.progressBarTrack}>
+                    <div 
+                      className={styles.progressBarFill} 
+                      style={{ width: `${analysisProgress}%` }}
+                    />
+                  </div>
+                  <span className={styles.progressPercentText}>{analysisProgress}%</span>
+                </div>
+
+                <div className={styles.stagesList}>
+                  {ANALYSIS_STAGES.map((stage, idx) => {
+                    const isCompleted = analysisStage > idx;
+                    const isCurrent = analysisStage === idx;
+                    const isPending = analysisStage < idx;
+
+                    return (
+                      <div 
+                        key={stage.id} 
+                        className={`${styles.stageItem} ${isCurrent ? styles.stageItemActive : ''} ${isCompleted ? styles.stageItemCompleted : ''} ${isPending ? styles.stageItemPending : ''}`}
+                      >
+                        <div className={styles.stageIndicatorCol}>
+                          <div className={styles.stageBadge}>
+                            {isCompleted ? (
+                              <span className={styles.stageCheckmark}>✓</span>
+                            ) : isCurrent ? (
+                              <span className={styles.stageSpinner} />
+                            ) : (
+                              <span className={styles.stagePendingDot} />
+                            )}
+                          </div>
+                          {idx < ANALYSIS_STAGES.length - 1 && (
+                            <div className={`${styles.stageConnector} ${isCompleted ? styles.stageConnectorActive : ''}`} />
+                          )}
+                        </div>
+
+                        <div className={styles.stageContent}>
+                          <div className={styles.stageTitleRow}>
+                            <span className={styles.stageIcon}>{stage.icon}</span>
+                            <span className={styles.stageTitle}>{stage.title}</span>
+                            {isCurrent && <span className={styles.stageActivePill}>In Progress</span>}
+                            {isCompleted && <span className={styles.stageDonePill}>Completed</span>}
+                          </div>
+                          <p className={styles.stageDesc}>{stage.desc}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 

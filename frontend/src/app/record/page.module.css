@@ -438,31 +438,207 @@
 .processingDesc {
   font-size: 0.9rem;
   color: var(--text-secondary);
+  max-width: 480px;
+  line-height: 1.5;
+  margin-top: -8px;
 }
 
-.processingSteps {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
+/* Real-time Stages Display */
+.stagesCard {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: var(--radius-xl);
+  padding: 20px 22px;
+  box-shadow: 0 12px 40px rgba(74, 108, 247, 0.1);
+  margin-top: 6px;
+  text-align: left;
 }
 
-.processingStep {
+.progressBarWrapper {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  opacity: 0;
-  animation: fadeInUp 0.4s ease both;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.processingStepDot {
-  width: 8px;
+.progressBarTrack {
+  flex: 1;
   height: 8px;
+  background: rgba(74, 108, 247, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #4A6CF7 0%, #8b5cf6 60%, #ec4899 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease-out;
+  box-shadow: 0 0 10px rgba(74, 108, 247, 0.5);
+}
+
+.progressPercentText {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  min-width: 38px;
+  text-align: right;
+}
+
+.stagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.stageItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.stageIndicatorCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.stageBadge {
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: var(--accent-blue);
-  animation: pulse 1s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.stageItemCompleted .stageBadge {
+  background: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+}
+
+.stageCheckmark {
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.stageItemActive .stageBadge {
+  background: #ffffff;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(74, 108, 247, 0.45);
+}
+
+.stageSpinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--accent-blue);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.stagePendingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.stageConnector {
+  width: 2px;
+  height: 34px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 2px 0;
+  transition: background 0.3s ease;
+}
+
+.stageConnectorActive {
+  background: #10b981;
+}
+
+.stageContent {
+  flex: 1;
+  padding-bottom: 14px;
+}
+
+.stageTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.stageIcon {
+  font-size: 1rem;
+}
+
+.stageTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.stageItemPending .stageTitle {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.stageItemActive .stageTitle {
+  color: var(--accent-blue);
+}
+
+.stageActivePill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-blue);
+  background: rgba(74, 108, 247, 0.12);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.stageDonePill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.stageDesc {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.stageItemPending .stageDesc {
+  color: var(--text-tertiary);
+  opacity: 0.7;
 }
 
 /* ===== RESULTS STATE ===== */
