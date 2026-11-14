@@ -44,6 +44,10 @@ def update_zip_images(docx_path):
 
 def set_para_text(p, text):
     """Sets paragraph text while preserving style and run properties of the first run."""
+    # Remove any w:hyperlink elements
+    for hl in p._p.xpath('./w:hyperlink'):
+        p._p.remove(hl)
+
     if not p.runs:
         p.text = text
         return
