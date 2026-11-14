@@ -39,16 +39,51 @@ def analyze_voice(
 
         print(f"[INFO] Processing {filename} ({len(audio_bytes)} bytes)")
         
-        # 2. Fast Feature Extraction with Voice Activity Detection (VAD)
+        # 2. Fast Feature Extraction with Voice Activity Detection (VAD) & Noise Profiling
         feat_start = time.time()
-        features_array, has_speech, vad_reason = extract_features(audio_bytes, return_vad=True)
-        print(f"[INFO] VAD: has_speech={has_speech} ({vad_reason}) | extraction took {time.time() - feat_start:.3f}s")
+        features_array, has_speech, vad_reason, noise_info = extract_features(audio_bytes, return_vad=True)
+        print(f"[INFO] VAD: has_speech={has_speech} ({vad_reason}) | Noise: {noise_info} | extraction took {time.time() - feat_start:.3f}s")
         
+        # Check if background noise detected is too high
+        if noise_info and noise_info.get("noise_too_high"):
+            total_time = time.time() - start_time
+            return {
+                "status": "noise_too_high",
+                "message": noise_info.get("message", "Background noise detected: Ambient noise is too high. Please record in a quieter environment."),
+                "noise_info": noise_info,
+                "extracted_features": {
+                    "voice_tremor": 0,
+                    "breathiness": 0,
+                    "pitch_variation": 0,
+                    "speech_energy": 0,
+                    "has_speech": False
+                },
+                "health_score": 0,
+                "risk_level": "insufficient_data",
+                "system_insights": {
+                    "respiratory": { "score": 0, "insight": "Ambient noise too high for clinical analysis.", "status": "warning", "is_mock": False },
+                    "neurological": { "score": 0, "insight": "Ambient noise too high for clinical analysis.", "status": "warning", "is_mock": False },
+                    "emotional": { "score": 0, "insight": "Ambient noise too high for clinical analysis.", "status": "warning", "is_mock": False },
+                    "predictions": {
+                        "asthma": { "prediction": "Noise Too High", "confidence": 0.0, "severity": 0 },
+                        "depression": { "prediction": "Noise Too High", "confidence": 0.0, "severity": 0 },
+                        "parkinsons": { "prediction": "Noise Too High", "confidence": 0.0, "severity": 0 }
+                    }
+                },
+                "predictions": {
+                    "asthma": { "prediction": "Noise Too High", "confidence": 0.0, "severity": 0 },
+                    "depression": { "prediction": "Noise Too High", "confidence": 0.0, "severity": 0 },
+                    "parkinsons": { "prediction": "Noise Too High", "confidence": 0.0, "severity": 0 }
+                },
+                "processing_time_sec": round(total_time, 3)
+            }
+
         if not has_speech:
             total_time = time.time() - start_time
             return {
                 "status": "no_speech_detected",
                 "message": "No voice was detected in the audio recording. Please speak clearly into your microphone.",
+                "noise_info": noise_info,
                 "extracted_features": {
                     "voice_tremor": 0,
                     "breathiness": 0,
@@ -86,6 +121,7 @@ def analyze_voice(
         
         return {
             "status": "success",
+            "noise_info": noise_info,
             "extracted_features": analysis_result.get("extracted_features"),
             "system_insights": analysis_result.get("system_insights"),
             "health_score": analysis_result.get("health_score"),

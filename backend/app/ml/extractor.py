@@ -11,12 +11,17 @@ def check_voice_activity(y, sr=16000):
     Uses 4-stage verification:
     1. Absolute acoustic energy threshold.
     2. High-pass filtering (75 Hz) to remove mains hum and low-frequency rumble.
-    3. Dynamic contrast analysis across 40ms frames (rejects stationary room noise/fans/AC).
+    3. Dynamic contrast analysis across 40ms frames (detects stationary vs excessive background noise).
     4. Harmonic pitch autocorrelation (identifies vocal fold periodicity in 75Hz-400Hz range).
     Returns (has_speech: bool, reason: str, metrics: dict)
     """
     if y is None or len(y) == 0:
-        return False, "Audio data is empty", {"rms": 0.0, "max": 0.0, "voiced_sec": 0.0}
+        return False, "Audio data is empty", {
+            "rms": 0.0, "max": 0.0, "voiced_sec": 0.0,
+            "noise_detected": False, "noise_too_high": False, "noise_removed": False,
+            "snr_db": 0.0, "noise_floor": 0.0,
+            "message": "Audio data is empty"
+        }
 
     # Ensure mono
     if len(y.shape) > 1:
@@ -28,7 +33,10 @@ def check_voice_activity(y, sr=16000):
     # 1. Absolute acoustic minimum: human voice spoken near mic easily reaches >= 0.06 peak
     if raw_peak < 0.06 or raw_rms < 0.008:
         return False, f"Audio energy too low (peak: {raw_peak:.3f}, rms: {raw_rms:.4f})", {
-            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0
+            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0,
+            "noise_detected": False, "noise_too_high": False, "noise_removed": False,
+            "snr_db": 0.0, "noise_floor": raw_rms,
+            "message": "Audio level too low. Please speak closer to your microphone."
         }
 
     # 2. High-pass filter (75 Hz cutoff) to eliminate DC offset, mic rumble and 50/60 Hz mains hum
@@ -38,13 +46,16 @@ def check_voice_activity(y, sr=16000):
     except Exception:
         y_filt = y
 
-    # 3. Dynamic contrast analysis across 40ms frames (rejects stationary fan, AC, hum)
+    # 3. Dynamic contrast analysis across 40ms frames
     frame_len = int(sr * 0.04)  # 40ms = 640 samples
     hop_len = int(sr * 0.02)    # 20ms = 320 samples
     num_frames = (len(y_filt) - frame_len) // hop_len
     if num_frames < 10:
         return False, "Audio too short for clinical voice analysis", {
-            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0
+            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0,
+            "noise_detected": False, "noise_too_high": False, "noise_removed": False,
+            "snr_db": 0.0, "noise_floor": 0.0,
+            "message": "Audio recording too short."
         }
 
     frame_rms_list = []
@@ -57,12 +68,26 @@ def check_voice_activity(y, sr=16000):
     p90 = float(np.percentile(frame_rms_arr, 90))
     p10 = float(np.percentile(frame_rms_arr, 10))
     dynamic_ratio = p90 / (p10 + 1e-6)
+    snr_db = float(20 * np.log10((p90 + 1e-6) / (p10 + 1e-6)))
     rms_std = float(np.std(frame_rms_arr))
 
-    # Stationary background noise (AC, fan, background hiss) has flat energy profile
+    # A. Check if background noise is TOO HIGH (Ambient noise dominates or drowns out speech biomarkers)
+    # Trigger conditions: very high noise floor (p10 > 0.045 with low SNR) or flattened dynamic contrast under high volume
+    if (p10 >= 0.045 and snr_db < 7.5) or (dynamic_ratio < 1.75 and raw_rms >= 0.025) or (p10 > 0.07):
+        return False, "Background noise detected: Ambient noise is too high for accurate clinical analysis. Please record in a quieter environment.", {
+            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0,
+            "noise_detected": True, "noise_too_high": True, "noise_removed": False,
+            "snr_db": round(snr_db, 1), "noise_floor": round(p10, 4),
+            "message": "Background noise detected: Ambient noise is too high. Please record in a quieter environment."
+        }
+
+    # B. Stationary background noise (AC, fan, background hiss) has flat energy profile with no speech
     if dynamic_ratio < 2.0 and rms_std < 0.008 and raw_peak < 0.15:
-        return False, f"Stationary background noise detected (contrast ratio: {dynamic_ratio:.2f}, std: {rms_std:.4f})", {
-            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0
+        return False, f"Stationary background noise detected without speech (contrast ratio: {dynamic_ratio:.2f}, std: {rms_std:.4f})", {
+            "rms": raw_rms, "max": raw_peak, "voiced_sec": 0.0,
+            "noise_detected": True, "noise_too_high": False, "noise_removed": False,
+            "snr_db": round(snr_db, 1), "noise_floor": round(p10, 4),
+            "message": "Only stationary background noise detected. Please speak into the microphone."
         }
 
     # 4. Harmonic periodicity check (Vocal fold vibration in 75Hz - 400Hz range)
@@ -88,11 +113,20 @@ def check_voice_activity(y, sr=16000):
     voiced_sec = voiced_frames * 0.02
     if voiced_sec < 0.35:
         return False, f"No human vocal periodicity detected (voiced: {voiced_sec:.2f}s)", {
-            "rms": raw_rms, "max": raw_peak, "voiced_sec": voiced_sec
+            "rms": raw_rms, "max": raw_peak, "voiced_sec": voiced_sec,
+            "noise_detected": True, "noise_too_high": False, "noise_removed": False,
+            "snr_db": round(snr_db, 1), "noise_floor": round(p10, 4),
+            "message": "No human vocal periodicity detected. Please speak clearly."
         }
 
     return True, f"Valid human vocal speech detected (voiced: {voiced_sec:.2f}s)", {
-        "rms": raw_rms, "max": raw_peak, "voiced_sec": voiced_sec
+        "rms": raw_rms, "max": raw_peak, "voiced_sec": voiced_sec,
+        "noise_detected": True,
+        "noise_too_high": False,
+        "noise_removed": True,
+        "snr_db": round(snr_db, 1),
+        "noise_floor": round(p10, 4),
+        "message": "Background noise is removed successfully and this is your results"
     }
 
 
@@ -199,17 +233,28 @@ def extract_features(audio_input, sr=16000, return_vad=False):
         if len(y) > max_samples:
             y = y[:max_samples]
 
-        # 4. Voice Activity Detection (VAD)
-        has_speech, vad_reason, _ = check_voice_activity(y, sr)
-        if not has_speech:
-            print(f"[INFO] VAD: No speech detected ({vad_reason})")
+        # 4. Voice Activity Detection (VAD) & Noise Profiling
+        has_speech, vad_reason, vad_metrics = check_voice_activity(y, sr)
+        noise_info = {
+            "noise_detected": vad_metrics.get("noise_detected", True),
+            "noise_too_high": vad_metrics.get("noise_too_high", False),
+            "noise_removed": False,
+            "snr_db": vad_metrics.get("snr_db", 0.0),
+            "noise_floor": vad_metrics.get("noise_floor", 0.0),
+            "message": vad_metrics.get("message", "Processing audio...")
+        }
+
+        if not has_speech or noise_info["noise_too_high"]:
+            print(f"[INFO] VAD: Speech check failed or noise too high ({vad_reason})")
             defaults = np.zeros(50, dtype=np.float32)
             if return_vad:
-                return defaults, False, vad_reason
+                return defaults, False, vad_reason, noise_info
             return defaults
 
         # 5. Denoise speech (adaptive spectral subtraction & bandpass filtering to isolate vocal biomarkers)
         y = denoise_audio(y, sr)
+        noise_info["noise_removed"] = True
+        noise_info["message"] = "Background noise is removed successfully and this is your results"
 
         # 6. Normalize (Only normalize if true voice signal exists)
         max_abs = np.max(np.abs(y))
@@ -281,15 +326,23 @@ def extract_features(audio_input, sr=16000, return_vad=False):
         ]).astype(np.float32)
 
         if return_vad:
-            return features, True, "Valid vocal speech detected"
+            return features, True, "Valid vocal speech detected", noise_info
         return features
 
     except Exception as e:
         print(f"[CRITICAL] Error in fast feature extraction: {e}")
         traceback.print_exc()
         defaults = np.zeros(50, dtype=np.float32)
+        err_noise = {
+            "noise_detected": False,
+            "noise_too_high": False,
+            "noise_removed": False,
+            "snr_db": 0.0,
+            "noise_floor": 0.0,
+            "message": str(e)
+        }
         if return_vad:
-            return defaults, False, str(e)
+            return defaults, False, str(e), err_noise
         return defaults
     finally:
         y = None

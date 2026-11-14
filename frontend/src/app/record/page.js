@@ -91,6 +91,7 @@ export default function RecordPage() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [backendStatus, setBackendStatus] = useState('checking'); // checking | online | offline
   const [silenceWarning, setSilenceWarning] = useState(null);
+  const [noiseStatus, setNoiseStatus] = useState(null); // { detected: bool, tooHigh: bool, removed: bool, message: string }
   const [analysisStage, setAnalysisStage] = useState(0);
   const [analysisProgress, setAnalysisProgress] = useState(12);
 
@@ -224,6 +225,7 @@ export default function RecordPage() {
 
   const startRecording = async () => {
     setSilenceWarning(null);
+    setNoiseStatus(null);
     if (state === 'recording') {
       console.log("[DEBUG] startRecording called while already recording. Stopping instead.");
       stopRecording();
@@ -341,6 +343,17 @@ export default function RecordPage() {
 
       console.log(`[DEBUG] Audio check: maxAmp=${maxAmp.toFixed(4)}, p10=${p10.toFixed(4)}, p90=${p90.toFixed(4)}, ratio=${dynamicRatio.toFixed(2)}, voicedSec=${voicedSeconds.toFixed(2)}s`);
 
+      // Check if ambient background noise is excessively loud and drowning out speech
+      if (p10 > 0.055 && dynamicRatio < 1.7) {
+        setNoiseStatus({
+          tooHigh: true,
+          detected: true,
+          removed: false,
+          message: "Background noise detected: Ambient noise is too high for accurate clinical analysis. Please record in a quieter environment."
+        });
+        return;
+      }
+
       // Reject if total voiced time is under 0.40s, peak amplitude is too weak, or signal is flat stationary noise
       if (maxAmp < 0.06 || voicedSeconds < 0.40 || (dynamicRatio < 1.8 && maxAmp < 0.15)) {
         setSilenceWarning("No speech detected. Please speak clearly into your microphone while recording.");
@@ -378,11 +391,35 @@ export default function RecordPage() {
       const data = await response.json();
       console.log("[DEBUG] Analysis data received successfully.", data);
 
+      if (data.status === 'noise_too_high') {
+        setNoiseStatus({
+          tooHigh: true,
+          detected: true,
+          removed: false,
+          message: data.message || "Background noise detected: Ambient noise is too high. Please record in a quieter environment."
+        });
+        return;
+      }
+
       if (data.status === 'no_speech_detected') {
         setSilenceWarning(data.message || "No vocal speech detected. Please record while speaking continuously.");
         setState('idle');
         return;
       }
+
+      const noiseInfo = data.noise_info || {
+        noise_detected: true,
+        noise_removed: true,
+        noise_too_high: false,
+        message: "Background noise is removed successfully and this is your results"
+      };
+
+      setNoiseStatus({
+        tooHigh: false,
+        detected: noiseInfo.noise_detected ?? true,
+        removed: noiseInfo.noise_removed ?? true,
+        message: noiseInfo.message || "Background noise is removed successfully and this is your results"
+      });
 
       // Map API response to UI results format (Refined for 3-model Integration)
       const insights = data.system_insights || {};
@@ -404,9 +441,9 @@ export default function RecordPage() {
       // Complete all stages to 100% with checkmark before transitioning
       setAnalysisStage(4);
       setAnalysisProgress(100);
-      await new Promise((resolve) => setTimeout(resolve, 450));
+      await new Promise((resolve) => setTimeout(resolve, 850));
 
-      setResults({ raw: data, ui: mappedResults, diseases: diseasePredictions, finalAudioUrl: 'none' });
+      setResults({ raw: data, ui: mappedResults, diseases: diseasePredictions, noise: noiseInfo, finalAudioUrl: 'none' });
       setState('results');
     } catch (err) {
       console.error('[DEBUG] Supabase/AI Error:', err);
@@ -452,6 +489,7 @@ export default function RecordPage() {
     setTimeLeft(RECORD_DURATION);
     setResults(null);
     setAudioBlob(null);
+    setNoiseStatus(null);
   };
 
   const progressPercent = ((RECORD_DURATION - timeLeft) / RECORD_DURATION) * 100;
@@ -579,67 +617,117 @@ export default function RecordPage() {
                 <div className={styles.processingRing1} />
                 <div className={styles.processingRing2} />
                 <div className={styles.processingRing3} />
-                <span className={styles.processingIcon}>🧠</span>
+                <span className={styles.processingIcon}>
+                  {noiseStatus?.tooHigh ? '⚠️' : noiseStatus?.removed ? '✨' : '🧠'}
+                </span>
               </div>
-              <h3 className={styles.processingTitle}>Analyzing Voice Biomarkers</h3>
+              <h3 className={styles.processingTitle}>
+                {noiseStatus?.tooHigh ? 'Background Noise Detected' : 'Analyzing Voice Biomarkers'}
+              </h3>
               <p className={styles.processingDesc}>
-                {analysisStage >= 4 
+                {noiseStatus?.tooHigh
+                  ? 'Ambient room noise is too high for accurate clinical analysis.'
+                  : noiseStatus?.removed
+                  ? 'Background noise is removed successfully and this is your results'
+                  : analysisStage >= 4 
                   ? 'All neural models completed! Preparing your clinical report...'
                   : ANALYSIS_STAGES[Math.min(analysisStage, 3)].desc}
               </p>
 
-              {/* Real-time Stage Progress Display */}
-              <div className={styles.stagesCard}>
-                <div className={styles.progressBarWrapper}>
-                  <div className={styles.progressBarTrack}>
-                    <div 
-                      className={styles.progressBarFill} 
-                      style={{ width: `${analysisProgress}%` }}
-                    />
+              {/* Message 1: Background Noise Detected (Too High) */}
+              {noiseStatus?.tooHigh && (
+                <div className={styles.noiseAlertCard}>
+                  <div className={styles.noiseAlertHeader}>
+                    <span className={styles.noiseAlertIcon}>⚠️</span>
+                    <div>
+                      <h4 className={styles.noiseAlertTitle}>Background Noise Detected</h4>
+                      <p className={styles.noiseAlertSubtitle}>Noise level is too high for accurate vocal biomarkers</p>
+                    </div>
                   </div>
-                  <span className={styles.progressPercentText}>{analysisProgress}%</span>
+                  <p className={styles.noiseAlertMessage}>
+                    {noiseStatus.message}
+                  </p>
+                  <div className={styles.noiseAlertActions}>
+                    <button className="pill-button pill-button-primary" onClick={resetRecording}>
+                      Record Again in Quiet Space
+                    </button>
+                  </div>
                 </div>
+              )}
 
-                <div className={styles.stagesList}>
-                  {ANALYSIS_STAGES.map((stage, idx) => {
-                    const isCompleted = analysisStage > idx;
-                    const isCurrent = analysisStage === idx;
-                    const isPending = analysisStage < idx;
+              {/* Message 2: Background Noise Removed Successfully */}
+              {noiseStatus?.removed && !noiseStatus?.tooHigh && (
+                <div className={styles.noiseSuccessCard}>
+                  <div className={styles.noiseSuccessHeader}>
+                    <span className={styles.noiseSuccessIcon}>✨</span>
+                    <div>
+                      <h4 className={styles.noiseSuccessTitle}>Acoustic Cleansing Complete</h4>
+                      <p className={styles.noiseSuccessMessage}>
+                        Background noise is removed successfully and this is your results
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-                    return (
+              {/* Real-time Stage Progress Display (only if not halted by too-high noise) */}
+              {!noiseStatus?.tooHigh && (
+                <div className={styles.stagesCard}>
+                  <div className={styles.progressBarWrapper}>
+                    <div className={styles.progressBarTrack}>
                       <div 
-                        key={stage.id} 
-                        className={`${styles.stageItem} ${isCurrent ? styles.stageItemActive : ''} ${isCompleted ? styles.stageItemCompleted : ''} ${isPending ? styles.stageItemPending : ''}`}
-                      >
-                        <div className={styles.stageIndicatorCol}>
-                          <div className={styles.stageBadge}>
-                            {isCompleted ? (
-                              <span className={styles.stageCheckmark}>✓</span>
-                            ) : isCurrent ? (
-                              <span className={styles.stageSpinner} />
-                            ) : (
-                              <span className={styles.stagePendingDot} />
+                        className={styles.progressBarFill} 
+                        style={{ width: `${analysisProgress}%` }}
+                      />
+                    </div>
+                    <span className={styles.progressPercentText}>{analysisProgress}%</span>
+                  </div>
+
+                  <div className={styles.stagesList}>
+                    {ANALYSIS_STAGES.map((stage, idx) => {
+                      const isCompleted = analysisStage > idx;
+                      const isCurrent = analysisStage === idx;
+                      const isPending = analysisStage < idx;
+
+                      return (
+                        <div 
+                          key={stage.id} 
+                          className={`${styles.stageItem} ${isCurrent ? styles.stageItemActive : ''} ${isCompleted ? styles.stageItemCompleted : ''} ${isPending ? styles.stageItemPending : ''}`}
+                        >
+                          <div className={styles.stageIndicatorCol}>
+                            <div className={styles.stageBadge}>
+                              {isCompleted ? (
+                                <span className={styles.stageCheckmark}>✓</span>
+                              ) : isCurrent ? (
+                                <span className={styles.stageSpinner} />
+                              ) : (
+                                <span className={styles.stagePendingDot} />
+                              )}
+                            </div>
+                            {idx < ANALYSIS_STAGES.length - 1 && (
+                              <div className={`${styles.stageConnector} ${isCompleted ? styles.stageConnectorActive : ''}`} />
                             )}
                           </div>
-                          {idx < ANALYSIS_STAGES.length - 1 && (
-                            <div className={`${styles.stageConnector} ${isCompleted ? styles.stageConnectorActive : ''}`} />
-                          )}
-                        </div>
 
-                        <div className={styles.stageContent}>
-                          <div className={styles.stageTitleRow}>
-                            <span className={styles.stageIcon}>{stage.icon}</span>
-                            <span className={styles.stageTitle}>{stage.title}</span>
-                            {isCurrent && <span className={styles.stageActivePill}>In Progress</span>}
-                            {isCompleted && <span className={styles.stageDonePill}>Completed</span>}
+                          <div className={styles.stageContent}>
+                            <div className={styles.stageTitleRow}>
+                              <span className={styles.stageIcon}>{stage.icon}</span>
+                              <span className={styles.stageTitle}>{stage.title}</span>
+                              {isCurrent && <span className={styles.stageActivePill}>In Progress</span>}
+                              {isCompleted && <span className={styles.stageDonePill}>Completed</span>}
+                            </div>
+                            <p className={styles.stageDesc}>
+                              {idx === 0 && noiseStatus?.removed
+                                ? 'Background noise is removed successfully and clean vocal harmonics preserved'
+                                : stage.desc}
+                            </p>
                           </div>
-                          <p className={styles.stageDesc}>{stage.desc}</p>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -648,6 +736,12 @@ export default function RecordPage() {
               <div className={styles.resultsHeader}>
                 <span className={styles.resultsCheck}>✅</span>
                 <h3 className={styles.resultsTitle}>Analysis Complete</h3>
+              </div>
+
+              {/* Noise Removal Confirmation on Results Screen */}
+              <div className={styles.resultsNoiseBanner}>
+                <span className={styles.resultsNoiseIcon}>✨</span>
+                <span>Background noise is removed successfully and this is your results</span>
               </div>
               <div className={styles.resultsGrid}>
                 {Object.entries(results.ui).map(([key, bm], i) => (
