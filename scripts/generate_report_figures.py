@@ -100,7 +100,7 @@ ax.axis('off')
 ax.text(0.5, 0.85, "SwaasCare - Voice Biomarker Health Monitoring", ha='center', fontsize=12, fontweight='bold', color='#1e3a8a')
 ax.text(0.5, 0.68, "Microphone Recording Interface | 15-Second Voice Sample Analysis", ha='center', fontsize=9, color='#475569')
 # Record Button Box
-ax.text(0.5, 0.42, "🎙️ [ RECORDING VOICE SAMPLE ]\nStatus: Voice Activity Detected | Dual Denoising Active", 
+ax.text(0.5, 0.42, "[ MICROPHONE RECORDING INTERFACE ]\nStatus: Voice Activity Detected | Dual Denoising Active", 
         ha='center', va='center', fontsize=10, fontweight='bold', color='#ffffff',
         bbox=dict(boxstyle="round,pad=0.8", facecolor='#4338ca', edgecolor='#3730a3', lw=2))
 ax.text(0.5, 0.15, "Reading Prompt: 'The morning sunlight spread across the quiet sky...'\nReal-time Acoustic Cleansing & VAD Active", 
@@ -116,12 +116,12 @@ ax.text(0.5, 0.89, "Acoustic Analysis & Multi-Disease Screening Results", ha='ce
 
 # Cards
 cards = [
-    ("✨ Acoustic Status: Background Noise Removed Successfully\nSNR: 26.7 dB | Noise Floor: 0.0099 | Formants Preserved: 98.4%", '#dcfce7', '#166534', 0.80),
-    ("📊 Vitality Health Score: 88 / 100 (Risk Level: Low)\nBreathiness: Normal | Vocal Tremor: Stable | Pitch Dynamic: Balanced", '#e0e7ff', '#3730a3', 0.65),
-    ("🫁 Respiratory Screening (Asthma Model):\nResult: NORMAL (Confidence: 94%)\nAirflow dynamics and acoustic vocal friction within optimal clinical bounds.", '#f0fdf4', '#15803d', 0.50),
-    ("🧠 Neurological Screening (Parkinson's Model):\nResult: NORMAL (Confidence: 92%)\nVocal fold micro-tremors and fundamental frequency perturbation stable.", '#f0fdf4', '#15803d', 0.35),
-    ("🌧️ Emotional Well-Being (Depression Model):\nResult: NORMAL (Confidence: 97%)\nVocal energy distribution and prosodic pitch variance indicate balanced affect.", '#f0fdf4', '#15803d', 0.20),
-    ("⚠️ Clinical Notice: AI screening tool. Consult healthcare professionals.", '#fef3c7', '#b45309', 0.08)
+    ("Acoustic Status: Background Noise Removed Successfully\nSNR: 26.7 dB | Noise Floor: 0.0099 | Formants Preserved: 98.4%", '#dcfce7', '#166534', 0.80),
+    ("Vitality Health Score: 88 / 100 (Risk Level: Low)\nBreathiness: Normal | Vocal Tremor: Stable | Pitch Dynamic: Balanced", '#e0e7ff', '#3730a3', 0.65),
+    ("Respiratory Screening (Asthma Model):\nResult: NORMAL (Confidence: 94%)\nAirflow dynamics and acoustic vocal friction within optimal clinical bounds.", '#f0fdf4', '#15803d', 0.50),
+    ("Neurological Screening (Parkinson's Model):\nResult: NORMAL (Confidence: 92%)\nVocal fold micro-tremors and fundamental frequency perturbation stable.", '#f0fdf4', '#15803d', 0.35),
+    ("Emotional Well-Being (Depression Model):\nResult: NORMAL (Confidence: 97%)\nVocal energy distribution and prosodic pitch variance indicate balanced affect.", '#f0fdf4', '#15803d', 0.20),
+    ("Clinical Notice: AI screening tool. Consult healthcare professionals.", '#fef3c7', '#b45309', 0.08)
 ]
 
 for text, fc, ec, y in cards:
