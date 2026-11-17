@@ -51,6 +51,15 @@ def startup_prewarm():
     except Exception as e:
         print(f"[STARTUP] Prewarm notice: {e}")
 
+@app.get("/")
+def root():
+    return {
+        "status": "online",
+        "service": "SwaasCare Voice Biomarker API",
+        "version": "1.0.0",
+        "health": "/health"
+    }
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}

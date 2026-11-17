@@ -24,4 +24,4 @@ services:
       - key: NODE_VERSION
         value: 18.20.0
       - key: NEXT_PUBLIC_API_URL
-        value: https://swaascare-backend.onrender.com
+        value: https://swaascare-backend-thfb.onrender.com
